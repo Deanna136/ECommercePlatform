@@ -1,0 +1,50 @@
+server:
+  port: 8080
+
+mybatis:
+  type-aliases-package: com.example.ecommerceplatform.mybatis.entity
+  mapper-locations: classpath:mappers/*xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+tencent:
+  cos:
+    secretId:
+    secretKey:
+    region: ap-chengdu
+    bucketName: e-commerce-platform-1332476381
+    baseUrl: https://e-commerce-platform-1332476381.cos.ap-chengdu.myqcloud.com/
+
+spring:
+  profiles:
+    active: dev
+  datasource:
+    driver-class-name: ${ECommercePlatform.datasource.driver-class-name}
+    url: jdbc:mysql://${ECommercePlatform.datasource.host}:${ECommercePlatform.datasource.port}/${ECommercePlatform.datasource.database}?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8
+    username: ${ECommercePlatform.datasource.username}
+    password: ${ECommercePlatform.datasource.password}
+  # 文件上传大小限制（可选，上传图片/头像用）
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+ecommerceplatform:
+  jwt:
+    #管理员
+    # 设置jwt签名加密时使用的秘钥
+    adminSecretKey: admin
+    # 设置jwt过期时间
+    adminTtl: 7200000
+    # 设置前端传递过来的令牌名称
+    adminTokenName: admin_token
+
+    #买家
+    buyer-secret-key: buyer
+    buyer-ttl: 7200000
+    buyer-token-name: buyer_token
+
+    #卖家
+    seller-secret-key: seller
+    seller-ttl: 7200000
+    seller-token-name: seller_token
