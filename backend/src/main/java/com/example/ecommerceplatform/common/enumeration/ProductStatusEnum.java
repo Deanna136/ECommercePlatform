@@ -5,7 +5,7 @@ public enum ProductStatusEnum {
     approved,
     onsale,
     suspend,
-    draft,
+    offsale,
     rejected,
     out_of_stock,
     deleted
