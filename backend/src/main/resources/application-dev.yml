@@ -6,10 +6,8 @@ ECommercePlatform:
     database: ecommerce_platform
     username: test
     password: 123456
-
-
-
-
-
-
-
+  redis:
+    host: 121.4.24.200
+    port: 6379
+    password: 123456
+    database: 0

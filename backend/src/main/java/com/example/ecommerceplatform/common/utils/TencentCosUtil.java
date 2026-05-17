@@ -22,7 +22,7 @@ import java.util.UUID;
 
 @Slf4j
 @Component
-public class TencentCosUtils {
+public class TencentCosUtil {
     @Autowired
     private TencentCosProperties cosProperties;
 

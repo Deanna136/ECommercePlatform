@@ -25,11 +25,15 @@ public enum ErrorCode {
     SERVER_ERROR(500, "系统繁忙，请稍后再试"),
     SERVICE_BUSY(503, "系统繁忙，请稍后再试"),
 
-    // ==================== Token / 登录 专用（你要的重点） ====================
+    // ==================== Token / 登录 专用 ====================
     TOKEN_INVALID(401, "Token 无效"),
     TOKEN_EXPIRED(401, "Token 已过期，请重新登录"),
+    TOKEN_MALFORMED(401, "Token格式错误"),
+    TOKEN_SIGNATURE_ERROR(401, "Token签名验证失败"),
+    TOKEN_ILLEGAL_ARGUMENT(401, "Token参数错误"),
+    TOKEN_UNKNOWN_ERROR(401, "Token解析失败"),
     USER_NOT_LOGIN(401, "用户未登录或登录状态已失效"),
-
+    
     // ==================== 系统 / 数据库异常 ====================
     DB_ERROR(2001, "数据库服务异常"),
     DATA_DUPLICATE(2002, "数据重复/唯一约束冲突"),

@@ -2,7 +2,7 @@ package com.example.ecommerceplatform.server.controller.buyer;
 
 import com.example.ecommerceplatform.common.Exception.BusinessException;
 import com.example.ecommerceplatform.common.Result.Result;
-import com.example.ecommerceplatform.common.utils.TencentCosUtils;
+import com.example.ecommerceplatform.common.utils.TencentCosUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,7 @@ import java.io.InputStream;
 @Api(tags = "买家COS腾讯云相关接口")
 public class BuyerFileController {
     @Autowired
-    TencentCosUtils cosUtils;
+    TencentCosUtil cosUtils;
     /**
      * 上传图片
      *

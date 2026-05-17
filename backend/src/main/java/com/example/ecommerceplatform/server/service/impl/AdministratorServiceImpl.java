@@ -19,118 +19,98 @@ public class AdministratorServiceImpl implements AdministratorService {
     @Resource
     AdministratorMapper administratorMapper;
 
-
-    /**
-     * 修改密码
-     * @param updatePasswordDTO
-     * @return
-     */
-    @Override
-    public Boolean updatePassword(UpdatePasswordDTO updatePasswordDTO) {
-        Long inputId = updatePasswordDTO.getId();
-        String inputPassword = updatePasswordDTO.getPassword();
-        //1.查询用户是否存在
-        if(administratorMapper.getById(inputId) == null){
-            throw new BusinessException(ErrorCode.USER_NOT_EXIST);
-        }
-        //2.密码长度校验
-        if(updatePasswordDTO.getPassword().length() < 6){
-            throw new BusinessException(ErrorCode.PASSWORD_LENGTH_ERROR);
-        }
-        //3.修改密码，返回结果
-        return administratorMapper.updatePassword(updatePasswordDTO.getPassword(),updatePasswordDTO.getId())>0;
-    }
-
     /**
      * 登录
-     * @param loginDTO
-     * @return
      */
     @Override
     public AdministratorVO login(LoginDTO loginDTO) {
         String inputUserName = loginDTO.getUserName();
         String inputPassword = loginDTO.getPassword();
-        //1.查找用户名
+
+        // 1. 查找用户名
         Administrator admin = administratorMapper.getByUserName(inputUserName);
-        if(admin==null){
+        if (admin == null) {
             throw new BusinessException(ErrorCode.USER_NOT_EXIST);
         }
-        //2.用户密码是否正确
-        if(!admin.getPassword().equals(inputPassword)){//————密码不正确
+
+        // 2. 校验密码
+        if (!admin.getPassword().equals(inputPassword)) {
             throw new BusinessException(ErrorCode.PASSWORD_ERROR);
-        }else{//————密码正确
-            //构造vo返回
-            AdministratorVO administratorVO = AdministratorVO.builder()
-                    .id(admin.getId())
-                    .userName(admin.getUserName())
-                    .createTime(admin.getCreateTime())
-                    .updateTime(admin.getUpdateTime())
-                    .build();
-            return administratorVO;
         }
+
+        // 3. 构造 VO 返回
+        return AdministratorVO.builder()
+                .id(admin.getId())
+                .userName(admin.getUserName())
+                .createTime(admin.getCreateTime())
+                .updateTime(admin.getUpdateTime())
+                .build();
+    }
+
+    /**
+     * 修改密码
+     */
+    @Override
+    public Boolean updatePassword(UpdatePasswordDTO updatePasswordDTO) {
+        if (administratorMapper.getById(updatePasswordDTO.getId()) == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_EXIST);
+        }
+        if (updatePasswordDTO.getPassword().length() < 6) {
+            throw new BusinessException(ErrorCode.PASSWORD_LENGTH_ERROR);
+        }
+        return administratorMapper.updatePassword(
+                updatePasswordDTO.getPassword(), updatePasswordDTO.getId()) > 0;
     }
 
     /**
      * 查询全部
-     *
-     * @return
      */
     @Override
     public List<AdministratorVO> getAll() {
         List<Administrator> admins = administratorMapper.getAll();
-        List<AdministratorVO> newAdmins = new ArrayList<>();
-        //封装为List<AdministratorVO>
-        for(int i=0;i<admins.size();++i){
-            AdministratorVO administratorVO = AdministratorVO.builder()
-                    .id(admins.get(i).getId())
-                    .userName(admins.get(i).getUserName())
-                    .createTime(admins.get(i).getCreateTime())
-                    .updateTime(admins.get(i).getUpdateTime())
-                    .build();
-            newAdmins.add(administratorVO);
+        List<AdministratorVO> result = new ArrayList<>();
+        for (Administrator admin : admins) {
+            result.add(AdministratorVO.builder()
+                    .id(admin.getId())
+                    .userName(admin.getUserName())
+                    .createTime(admin.getCreateTime())
+                    .updateTime(admin.getUpdateTime())
+                    .build());
         }
-        return newAdmins;
+        return result;
     }
 
     /**
      * 根据id查询
-     * @param id
-     * @return
      */
     @Override
     public AdministratorVO getById(Long id) {
         Administrator administrator = administratorMapper.getById(id);
-        if(administrator==null){
+        if (administrator == null) {
             throw new BusinessException(ErrorCode.USER_NOT_EXIST);
-        } else {
-            AdministratorVO administratorVO = AdministratorVO.builder()
-                    .id(administrator.getId())
-                    .userName(administrator.getUserName())
-                    .createTime(administrator.getCreateTime())
-                    .updateTime(administrator.getUpdateTime())
-                    .build();
-            return administratorVO;
         }
+        return AdministratorVO.builder()
+                .id(administrator.getId())
+                .userName(administrator.getUserName())
+                .createTime(administrator.getCreateTime())
+                .updateTime(administrator.getUpdateTime())
+                .build();
     }
 
     /**
      * 根据用户名查询
-     * @param userName
-     * @return
      */
     @Override
     public AdministratorVO getByUserName(String userName) {
         Administrator administrator = administratorMapper.getByUserName(userName);
-        if(administrator==null){
+        if (administrator == null) {
             throw new BusinessException(ErrorCode.USER_NOT_EXIST);
-        } else {
-            AdministratorVO administratorVO = AdministratorVO.builder()
-                    .id(administrator.getId())
-                    .userName(administrator.getUserName())
-                    .createTime(administrator.getCreateTime())
-                    .updateTime(administrator.getUpdateTime())
-                    .build();
-            return administratorVO;
         }
+        return AdministratorVO.builder()
+                .id(administrator.getId())
+                .userName(administrator.getUserName())
+                .createTime(administrator.getCreateTime())
+                .updateTime(administrator.getUpdateTime())
+                .build();
     }
 }

@@ -28,16 +28,29 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
+  # Redis 配置
+  redis:
+    host: ${ECommercePlatform.redis.host}
+    port: ${ECommercePlatform.redis.port}
+    password: ${ECommercePlatform.redis.password}
+    database: ${ECommercePlatform.redis.database}
+    timeout: 5000ms
+    lettuce:
+      pool:
+        max-active: 10
+        max-idle: 5
+        min-idle: 1
+        max-wait: 2000ms
 
 ecommerceplatform:
   jwt:
     #管理员
     # 设置jwt签名加密时使用的秘钥
-    adminSecretKey: admin
+    admin-secret-key: admin
     # 设置jwt过期时间
-    adminTtl: 7200000
+    admin-ttl: 7200000
     # 设置前端传递过来的令牌名称
-    adminTokenName: admin_token
+    admin-token-name: admin_token
 
     #买家
     buyer-secret-key: buyer
