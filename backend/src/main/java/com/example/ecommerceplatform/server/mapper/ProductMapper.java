@@ -1,5 +1,6 @@
 package com.example.ecommerceplatform.server.mapper;
 
+import com.example.ecommerceplatform.pojo.dto.BuyerProductQueryDTO;
 import com.example.ecommerceplatform.pojo.dto.ProductQueryDTO;
 import com.example.ecommerceplatform.pojo.entity.Product;
 import org.apache.ibatis.annotations.Mapper;
@@ -15,8 +16,14 @@ public interface ProductMapper {
     @Select("select * from product where status != 'deleted'")
     List<Product> getAll();
 
+    @Select("select * from product where status = 'onsale'")
+    List<Product> listOnsale();
+
     @Select("select * from product where id = #{id}")
     Product getById(@Param("id") Long id);
+
+    @Select("select * from product where id = #{id} and status = 'onsale'")
+    Product getOnsaleById(@Param("id") Long id);
 
     @Select("<script>select * from product where status != 'deleted'" +
             "<if test='id != null'> and id = #{id}</if>" +
@@ -29,6 +36,8 @@ public interface ProductMapper {
             "<if test='maxPrice != null'> and price &lt;= #{maxPrice}</if>" +
             "</script>")
     List<Product> query(ProductQueryDTO dto);
+
+    List<Product> queryOnsale(BuyerProductQueryDTO dto);
 
     @Update("update product set status = 'onsale' where id = #{id}")
     int approve(@Param("id") Long id);

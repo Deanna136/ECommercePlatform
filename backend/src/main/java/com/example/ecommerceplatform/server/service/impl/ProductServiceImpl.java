@@ -2,6 +2,7 @@ package com.example.ecommerceplatform.server.service.impl;
 
 import com.example.ecommerceplatform.common.Exception.BusinessException;
 import com.example.ecommerceplatform.common.Result.ErrorCode;
+import com.example.ecommerceplatform.pojo.dto.BuyerProductQueryDTO;
 import com.example.ecommerceplatform.pojo.dto.ProductQueryDTO;
 import com.example.ecommerceplatform.pojo.entity.Product;
 import com.example.ecommerceplatform.pojo.entity.Seller;
@@ -33,6 +34,16 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public List<ProductVO> listOnsale() {
+        List<Product> products = productMapper.listOnsale();
+        List<ProductVO> result = new ArrayList<>();
+        for (Product p : products) {
+            result.add(toVO(p));
+        }
+        return result;
+    }
+
+    @Override
     public ProductVO getById(Long id) {
         Product product = productMapper.getById(id);
         if (product == null || "deleted".equals(product.getStatus().name())) {
@@ -42,8 +53,27 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public ProductVO getOnsaleById(Long id) {
+        Product product = productMapper.getOnsaleById(id);
+        if (product == null) {
+            throw new BusinessException(ErrorCode.PRODUCT_NOT_EXIST);
+        }
+        return toVO(product);
+    }
+
+    @Override
     public List<ProductVO> query(ProductQueryDTO dto) {
         List<Product> products = productMapper.query(dto);
+        List<ProductVO> result = new ArrayList<>();
+        for (Product p : products) {
+            result.add(toVO(p));
+        }
+        return result;
+    }
+
+    @Override
+    public List<ProductVO> queryOnsale(BuyerProductQueryDTO dto) {
+        List<Product> products = productMapper.queryOnsale(dto);
         List<ProductVO> result = new ArrayList<>();
         for (Product p : products) {
             result.add(toVO(p));
