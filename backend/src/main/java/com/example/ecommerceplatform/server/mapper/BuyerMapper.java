@@ -6,6 +6,8 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Options;
 
 import java.util.List;
 
@@ -35,4 +37,14 @@ public interface BuyerMapper {
 
     @Update("update buyer set status = 'active' where id = #{id}")
     int unban(@Param("id") Long id);
+
+    @Select("select * from buyer where user_name = #{userName}")
+    Buyer getByUsername(@Param("userName") String userName);
+
+    @Insert("insert into buyer(user_name, password, name, id_number, sex, phone, address, image, status, create_time, update_time) " +
+            "values (#{userName}, #{password}, #{name}, #{idNumber}, #{sex}, #{phone}, #{address}, #{image}, #{status}, #{createTime}, #{updateTime})")
+    @Options(useGeneratedKeys = true, keyProperty = "id")
+    void insert(Buyer buyer);
+
+    void update(Buyer buyer);
 }
