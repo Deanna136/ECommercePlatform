@@ -1,24 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Login from '../views/Login.vue'
-import Admin from '../views/Admin.vue'   // 您的原 admin.vue 组件路径
+import Admin from '../views/Admin.vue'
+import { buyerRoutes } from './buyer-router'
 
 const routes = [
-  {
-    path: '/login',
-    name: 'Login',
-    component: Login,
-    meta: { requiresAuth: false }
-  },
-  {
-    path: '/admin',
-    name: 'Admin',
-    component: Admin,
-    meta: { requiresAuth: true }   // 需要登录才能访问
-  },
-  {
-    path: '/',
-    redirect: '/login'   // 根路径重定向到 admin
-  }
+  { path: '/login', name: 'Login', component: Login, meta: { requiresAuth: false } },
+  { path: '/admin', name: 'Admin', component: Admin, meta: { requiresAuth: true, role: 'admin' } },
+  { path: '/', redirect: '/buyer/home' },
+  ...buyerRoutes
 ]
 
 const router = createRouter({
@@ -26,20 +15,42 @@ const router = createRouter({
   routes
 })
 
-// 全局前置守卫：检查登录状态
 router.beforeEach((to, from, next) => {
-  const adminStr = localStorage.getItem('admin')
-  const isAuthenticated = adminStr !== null
+  if (to.meta.title) document.title = to.meta.title
 
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    // 需要登录但未登录，跳转到登录页
-    next('/login')
-  } else if (to.path === '/login' && isAuthenticated) {
-    // 已登录的情况下访问登录页，直接跳转到 admin
-    next('/admin')
-  } else {
+  const buyerToken = localStorage.getItem('buyer_token')
+  const isBuyerLoggedIn = !!buyerToken
+
+  // 买家端守卫
+  if (to.path.startsWith('/buyer')) {
+    if (to.meta.requiresAuth !== false && !isBuyerLoggedIn) {
+      next({ path: '/buyer/login', query: { redirect: to.fullPath } })
+      return
+    }
+    if (to.path === '/buyer/login' && isBuyerLoggedIn) {
+      next('/buyer/home')
+      return
+    }
     next()
+    return
   }
+
+  // 管理员端守卫（保留原逻辑，可根据需要修改）
+  if (to.path.startsWith('/admin')) {
+    const adminToken = localStorage.getItem('admin_token')
+    if (to.meta.requiresAuth && !adminToken) {
+      next('/login')
+      return
+    }
+    if (to.path === '/login' && adminToken) {
+      next('/admin')
+      return
+    }
+    next()
+    return
+  }
+
+  next()
 })
 
 export default router

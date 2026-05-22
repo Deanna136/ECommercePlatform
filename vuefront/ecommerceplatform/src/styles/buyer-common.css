@@ -1,0 +1,233 @@
+@import "./buyer-vars.css";
+
+/* 全局重置 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--buyer-bg-page);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: var(--buyer-text-regular);
+}
+
+/* ========== 布局容器 ========== */
+.buyer-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  box-sizing: border-box;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .buyer-container {
+    padding: 16px 12px;
+  }
+}
+
+/* ========== 文字工具 ========== */
+.buyer-title {
+  font-size: var(--buyer-font-title);
+  font-weight: 600;
+  color: var(--buyer-text-primary);
+  margin-bottom: 20px;
+  letter-spacing: 0.5px;
+}
+
+.buyer-subtitle {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--buyer-text-primary);
+  margin-bottom: 16px;
+}
+
+.buyer-text-main {
+  font-size: var(--buyer-font-main);
+  color: var(--buyer-text-regular);
+}
+
+.buyer-text-aux {
+  font-size: var(--buyer-font-aux);
+  color: var(--buyer-text-secondary);
+}
+
+.buyer-price {
+  color: var(--buyer-price);
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.buyer-price-large {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--buyer-price);
+}
+
+/* ========== 按钮样式（覆盖 Element Plus 部分默认样式） ========== */
+.buyer-btn-primary {
+  background-color: var(--buyer-primary) !important;
+  border-color: var(--buyer-primary) !important;
+  border-radius: 24px !important;
+  padding: 8px 24px !important;
+  font-weight: 500 !important;
+  transition: var(--buyer-transition) !important;
+}
+.buyer-btn-primary:hover {
+  background-color: var(--buyer-primary-light) !important;
+  border-color: var(--buyer-primary-light) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+}
+
+.buyer-btn-secondary {
+  background-color: #fff !important;
+  border: 1px solid var(--buyer-border-color) !important;
+  color: var(--buyer-text-regular) !important;
+  border-radius: 24px !important;
+  padding: 8px 24px !important;
+  transition: var(--buyer-transition) !important;
+}
+.buyer-btn-secondary:hover {
+  border-color: var(--buyer-primary) !important;
+  color: var(--buyer-primary) !important;
+  background-color: #ecf5ff !important;
+}
+
+/* ========== 输入框统一样式 ========== */
+.buyer-input .el-input__wrapper,
+.buyer-input .el-textarea__inner {
+  border-radius: var(--buyer-border-radius-sm) !important;
+  box-shadow: 0 0 0 1px var(--buyer-border-color) inset !important;
+  transition: var(--buyer-transition) !important;
+}
+.buyer-input .el-input__wrapper:hover,
+.buyer-input .el-textarea__inner:hover {
+  box-shadow: 0 0 0 1px var(--buyer-primary) inset !important;
+}
+.buyer-input .el-input__wrapper.is-focus,
+.buyer-input .el-textarea__inner:focus {
+  box-shadow: 0 0 0 1px var(--buyer-primary) inset !important;
+}
+
+/* ========== 分割线 ========== */
+.buyer-divider {
+  border-color: var(--buyer-border-color) !important;
+  margin: 20px 0 !important;
+}
+
+/* ========== 卡片通用样式 ========== */
+.buyer-card {
+  background: var(--buyer-bg-card);
+  border-radius: var(--buyer-border-radius);
+  box-shadow: var(--buyer-shadow-sm);
+  padding: 16px;
+  transition: var(--buyer-transition);
+}
+.buyer-card:hover {
+  box-shadow: var(--buyer-shadow-md);
+}
+
+/* 商品卡片（为兼容旧类名保留） */
+.buyer-goods-card {
+  background: var(--buyer-bg-card);
+  border-radius: var(--buyer-border-radius);
+  border: 1px solid var(--buyer-border-color);
+  padding: 12px;
+  transition: var(--buyer-transition);
+  cursor: pointer;
+}
+.buyer-goods-card:hover {
+  box-shadow: var(--buyer-shadow-md);
+  transform: translateY(-2px);
+  border-color: transparent;
+}
+
+/* ========== 表格样式优化 ========== */
+.el-table {
+  border-radius: var(--buyer-border-radius-sm);
+  overflow: hidden;
+}
+.el-table th.el-table__cell {
+  background-color: #fafafa;
+  font-weight: 500;
+  color: var(--buyer-text-primary);
+}
+.el-table .el-table__cell {
+  font-size: var(--buyer-font-main);
+}
+
+/* ========== 对话框样式 ========== */
+.el-dialog {
+  border-radius: var(--buyer-border-radius);
+}
+.el-dialog__header {
+  border-bottom: 1px solid var(--buyer-border-color);
+  padding: 16px 20px;
+  margin-right: 0;
+}
+.el-dialog__title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* ========== 分页样式 ========== */
+.pagination-wrap .el-pagination {
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+.pagination-wrap .el-pagination .btn-prev,
+.pagination-wrap .el-pagination .btn-next,
+.pagination-wrap .el-pagination .el-pager li {
+  border-radius: 8px;
+  margin: 0 4px;
+  transition: var(--buyer-transition);
+}
+.pagination-wrap .el-pagination .el-pager li.active {
+  background-color: var(--buyer-primary);
+  color: #fff;
+}
+
+/* ========== 空状态与加载 ========== */
+.buyer-empty {
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--buyer-bg-card);
+  border-radius: var(--buyer-border-radius);
+  color: var(--buyer-text-secondary);
+}
+
+/* ========== 工具类 ========== */
+.text-center {
+  text-align: center;
+}
+.text-right {
+  text-align: right;
+}
+.mt-16 {
+  margin-top: 16px;
+}
+.mb-16 {
+  margin-bottom: 16px;
+}
+.mt-24 {
+  margin-top: 24px;
+}
+.mb-24 {
+  margin-bottom: 24px;
+}
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.flex-start {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.w-full {
+  width: 100%;
+}

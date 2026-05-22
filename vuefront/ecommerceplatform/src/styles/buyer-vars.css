@@ -1,0 +1,40 @@
+/* 买家端样式变量 - 现代电商风格 */
+:root {
+  /* 主色调 */
+  --buyer-primary: #409eff;
+  --buyer-primary-light: #66b1ff;
+  --buyer-primary-dark: #3a8ee6;
+  
+  /* 强调色（价格、重要数字） */
+  --buyer-price: #f56c6c;
+  --buyer-price-light: #f89898;
+  
+  /* 背景色 */
+  --buyer-bg-page: #f5f7fa;
+  --buyer-bg-card: #ffffff;
+  --buyer-bg-hover: #f0f2f5;
+  
+  /* 文字颜色 */
+  --buyer-text-primary: #2c3e50;
+  --buyer-text-regular: #606266;
+  --buyer-text-secondary: #909399;
+  --buyer-text-placeholder: #c0c4cc;
+  
+  /* 边框 */
+  --buyer-border-color: #e4e7ed;
+  --buyer-border-radius: 12px;
+  --buyer-border-radius-sm: 8px;
+  
+  /* 字体大小 */
+  --buyer-font-title: 20px;
+  --buyer-font-main: 14px;
+  --buyer-font-aux: 12px;
+  
+  /* 阴影 */
+  --buyer-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --buyer-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --buyer-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  
+  /* 过渡动画 */
+  --buyer-transition: all 0.2s ease;
+}
