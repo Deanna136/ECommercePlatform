@@ -47,4 +47,10 @@ public interface ProductMapper {
 
     @Update("update product set status = 'suspend' where id = #{id}")
     int suspend(@Param("id") Long id);
+
+    @Update("update product set sku = sku - #{quantity} where id = #{id} and sku >= #{quantity}")
+    int decreaseSku(@Param("id") Long id, @Param("quantity") Integer quantity);
+
+    @Update("update product set sku = sku + #{quantity} where id = #{id}")
+    int increaseSku(@Param("id") Long id, @Param("quantity") Integer quantity);
 }

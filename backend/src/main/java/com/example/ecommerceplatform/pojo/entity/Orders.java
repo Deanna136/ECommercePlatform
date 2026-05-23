@@ -17,6 +17,8 @@ public class Orders {
     private Long sellerId;
     private float amount;
     private OrdersStatusEnum status;
+    private String phone;
+    private String address;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }
