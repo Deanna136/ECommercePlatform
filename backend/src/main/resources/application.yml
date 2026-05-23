@@ -3,7 +3,9 @@ server:
 
 mybatis:
   type-aliases-package: com.example.ecommerceplatform.mybatis.entity
-  mapper-locations: classpath:mappers/*xml
+  mapper-locations:
+    - classpath*:com/example/ecommerceplatform/**/mapper/*.xml
+    - classpath*:mapper/*.xml
   configuration:
     map-underscore-to-camel-case: true
 

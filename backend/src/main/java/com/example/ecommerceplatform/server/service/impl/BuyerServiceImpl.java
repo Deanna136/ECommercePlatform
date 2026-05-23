@@ -5,8 +5,10 @@ import com.example.ecommerceplatform.common.Result.ErrorCode;
 import com.example.ecommerceplatform.common.enumeration.AcountStatusEnum;
 import com.example.ecommerceplatform.pojo.dto.BuyerQueryDTO;
 import com.example.ecommerceplatform.pojo.entity.Buyer;
+import com.example.ecommerceplatform.pojo.entity.Cart;
 import com.example.ecommerceplatform.pojo.vo.BuyerVO;
 import com.example.ecommerceplatform.server.mapper.BuyerMapper;
+import com.example.ecommerceplatform.server.mapper.CartMapper;
 import com.example.ecommerceplatform.server.service.BuyerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,6 +41,8 @@ public class BuyerServiceImpl implements BuyerService {
     private JwtProperties jwtProperties;
     @Resource
     private RedisUtil redisUtil;
+    @Resource
+    private CartMapper cartMapper;
 
     @Override
     public List<BuyerVO> getAll() {
@@ -120,7 +124,12 @@ public class BuyerServiceImpl implements BuyerService {
 
         buyerMapper.insert(buyer);
 
-        // 5. 创建购物车 (后续实现)
+        // 5. 创建购物车
+        Cart cart = new Cart();
+        cart.setBuyerId(buyer.getId());
+        cartMapper.insert(cart);
+
+
     }
 
     @Override
