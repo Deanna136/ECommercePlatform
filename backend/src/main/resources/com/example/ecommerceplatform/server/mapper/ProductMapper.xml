@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.ecommerceplatform.server.mapper.ProductMapper">
+    <select id="queryOnsale" resultType="com.example.ecommerceplatform.pojo.entity.Product">
+        select p.*
+        from product p
+        join seller_products sp on sp.product_id = p.id
+        join seller s on s.id = sp.seller_id
+        <where>
+            p.status = 'onsale'
+            <if test="name != null and name != ''">
+                and p.name like concat('%', #{name}, '%')
+            </if>
+            <if test="category != null and category != ''">
+                and p.category = #{category}
+            </if>
+            <if test="sellerId != null">
+                and sp.seller_id = #{sellerId}
+            </if>
+            <if test="storeName != null and storeName != ''">
+                and s.store_name like concat('%', #{storeName}, '%')
+            </if>
+            <if test="minPrice != null">
+                and p.price >= #{minPrice}
+            </if>
+            <if test="maxPrice != null">
+                and p.price &lt;= #{maxPrice}
+            </if>
+        </where>
+    </select>
+</mapper>

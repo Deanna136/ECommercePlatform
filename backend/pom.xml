@@ -131,7 +131,11 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>com.example.ecommerceplatform.ECommercePlatformApplication</mainClass>
+<<<<<<< HEAD
                     <skip>true</skip>
+=======
+                    <skip>false</skip>
+>>>>>>> origin/feature/buyer-backend
                 </configuration>
                 <executions>
                     <execution>

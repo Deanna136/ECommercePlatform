@@ -3,14 +3,16 @@ server:
 
 mybatis:
   type-aliases-package: com.example.ecommerceplatform.mybatis.entity
-  mapper-locations: classpath:mappers/*xml
+  mapper-locations:
+    - classpath*:com/example/ecommerceplatform/**/mapper/*.xml
+    - classpath*:mapper/*.xml
   configuration:
     map-underscore-to-camel-case: true
 
 tencent:
   cos:
-    secretId:
-    secretKey:
+    secretId:AKIDnQr3BINFY1OpVF94qwrYAd3Mc1EC5oTy
+    secretKey:TtAE6nPp573oNjsnUyLYYK6jQylNmxud
     region: ap-chengdu
     bucketName: e-commerce-platform-1332476381
     baseUrl: https://e-commerce-platform-1332476381.cos.ap-chengdu.myqcloud.com/

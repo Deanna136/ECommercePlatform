@@ -1,24 +1,27 @@
-package com.example.ecommerceplatform.pojo.entity;
+package com.example.ecommerceplatform.pojo.vo;
 
-import com.example.ecommerceplatform.common.enumeration.OrdersStatusEnum;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Orders {
+public class OrderDetailVO {
     private Long id;
     private String orderNo;
     private Long buyerId;
+    private String buyerName;
     private Long sellerId;
-    private float amount;
-    private OrdersStatusEnum status;
-    private String phone;
-    private String address;
+    private String sellerName;
+    private Double amount;
+    private String status;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
+    private List<OrderItemVO> orderItems;
 }

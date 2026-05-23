@@ -2,6 +2,7 @@ package com.example.ecommerceplatform.server.config;
 
 import com.example.ecommerceplatform.common.json.JacksonObjectMapper;
 import com.example.ecommerceplatform.server.interceptor.JwtTokenAdminInterceptor;
+import com.example.ecommerceplatform.server.interceptor.JwtTokenBuyerInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -29,6 +30,8 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
 
     @Autowired
     private JwtTokenAdminInterceptor jwtTokenAdminInterceptor;
+    @Autowired
+    private JwtTokenBuyerInterceptor jwtTokenBuyerInterceptor;
 
     /**
      * 注册自定义拦截器
@@ -37,9 +40,14 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
      */
     protected void addInterceptors(InterceptorRegistry registry) {
         log.info("开始注册自定义拦截器...");
-        registry.addInterceptor(jwtTokenAdminInterceptor)
-                .addPathPatterns("/admin/**")
-                .excludePathPatterns("/admin/login");
+//        registry.addInterceptor(jwtTokenAdminInterceptor)
+//                .addPathPatterns("/admin/**")
+//                .excludePathPatterns("/admin/login");
+
+        registry.addInterceptor(jwtTokenBuyerInterceptor)
+                .addPathPatterns("/buyer/**")
+                .excludePathPatterns("/buyer/register")
+                .excludePathPatterns("/buyer/login");
     }
 
     /**
