@@ -1,42 +1,89 @@
 <template>
-  <div class="admin-container">
-    <div class="header">
-      <h2>管理员页面</h2>
-      <button class="logout-btn" @click="logout">退出登录</button>
-    </div>
-
-    <!-- 图片上传区域 -->
-    <div class="upload-section">
-      <h3>上传图片</h3>
-      <input type="file" accept="image/*" @change="handleFileChange" />
-      <button @click="submitUpload" :disabled="!selectedFile">上传图片</button>
-
-      <!-- 上传成功后通过代理接口显示图片 -->
-      <div v-if="imageBlobUrl" class="image-preview">
-        <p>上传成功：</p>
-        <img :src="imageBlobUrl" alt="上传的图片预览" />
+  <div class="admin-wrapper">
+    <!-- 侧边栏 -->
+    <Sidebar 
+      :current-menu="currentMenu"
+      :current-sub-menu="currentSubMenu"
+      @menu-change="handleMenuChange"
+      @submenu-change="handleSubMenuChange"
+    />
+    
+    <!-- 主内容区域 -->
+    <div class="main-content">
+      <!-- 顶部导航 -->
+      <div class="top-header">
+        <div class="header-left">
+          <span class="page-title">{{ currentPageTitle }}</span>
+        </div>
+        <div class="header-right">
+          <div class="user-info" @click="toggleUserMenu">
+            <span class="user-name">{{ adminInfo.userName || '管理员' }}</span>
+            <span class="dropdown-arrow">▼</span>
+          </div>
+          
+          <!-- 用户下拉菜单 -->
+          <div v-if="showUserMenu" class="user-dropdown">
+            <div class="dropdown-item" @click="openChangePasswordModal">
+              <span class="dropdown-icon">🔑</span>
+              <span>修改密码</span>
+            </div>
+            <div class="dropdown-item logout" @click="logout">
+              <span class="dropdown-icon">🚪</span>
+              <span>退出登录</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 内容区域 -->
+      <div class="content-area">
+        <BuyerList v-if="currentMenu === 'buyer'" />
+        <SellerList v-else-if="currentMenu === 'seller'" />
+        <ProductList v-else-if="currentMenu === 'product'" />
+        <OrderList v-else-if="currentMenu === 'order'" />
+        <div v-else class="empty-page">
+          <div class="empty-icon">📄</div>
+          <div class="empty-text">暂无内容</div>
+        </div>
       </div>
     </div>
-
-    <!-- 管理员列表 -->
-    <div class="admin-list">
-      <div class="admin-item" v-for="admin in adminList" :key="admin.id">
-        <span>ID：{{ admin.id }}</span>
-        <span>用户名：{{ admin.userName }}</span>
-        <span>密码：******</span>
-        <button class="edit-btn" @click="openEditModal(admin)">修改密码</button>
-      </div>
-    </div>
-
+    
     <!-- 修改密码弹窗 -->
-    <div v-if="showModal" class="modal">
+    <div v-if="showPasswordModal" class="modal">
       <div class="modal-content">
-        <h3>修改密码 ID：{{ currentAdmin.id }}</h3>
-        <input type="password" v-model="newPassword" placeholder="≥6位" />
-        <p class="tip" v-show="newPassword.length < 6">密码不能少于6位</p>
-        <div class="btns">
-          <button @click="showModal = false">取消</button>
-          <button @click="submitUpdatePwd">确认修改</button>
+        <div class="modal-header">
+          <h3>修改密码</h3>
+          <button class="modal-close" @click="closePasswordModal">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-item">
+            <label>管理员ID</label>
+            <input type="text" :value="adminInfo.id" disabled />
+          </div>
+          <div class="form-item">
+            <label>新密码 <span class="required">*</span></label>
+            <input 
+              type="password" 
+              v-model="passwordForm.newPassword" 
+              placeholder="请输入新密码（≥6位）"
+            />
+          </div>
+          <div class="form-item">
+            <label>确认密码 <span class="required">*</span></label>
+            <input 
+              type="password" 
+              v-model="passwordForm.confirmPassword" 
+              placeholder="请再次输入新密码"
+            />
+          </div>
+          <div v-if="passwordError" class="error-message">{{ passwordError }}</div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" @click="closePasswordModal">取消</button>
+          <button class="btn-confirm" @click="submitChangePassword" :disabled="loading">
+            <span v-if="loading">修改中...</span>
+            <span v-else>确认修改</span>
+          </button>
         </div>
       </div>
     </div>
@@ -44,233 +91,423 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import Sidebar from '../components/Sidebar.vue'
+import BuyerList from '../components/BuyerList.vue'
+import SellerList from '../components/SellerList.vue'
+import ProductList from '../components/ProductList.vue'
+import OrderList from '../components/OrderList.vue'
+import axios from '../utils/axios'
 
 const router = useRouter()
 
-// ========== 管理员相关状态 ==========
-const adminList = ref([])
-const showModal = ref(false)
-const currentAdmin = ref({})
-const newPassword = ref('')
+const currentMenu = ref('buyer')
+const currentSubMenu = ref('')
+const showUserMenu = ref(false)
+const showPasswordModal = ref(false)
+const loading = ref(false)
+const passwordError = ref('')
 
-// ========== 图片上传相关状态 ==========
-const selectedFile = ref(null)
-const imageBlobUrl = ref('')      // 存储 blob URL 用于 img 显示
-let currentBlobUrl = ''           // 辅助记录当前 blob URL（用于释放）
+const adminInfo = ref({
+  id: 1,
+  userName: 'admin'
+})
 
-// ========== 退出登录 ==========
+const passwordForm = ref({
+  newPassword: '',
+  confirmPassword: ''
+})
+
+const pageTitles = {
+  home: '首页',
+  buyer: '买家列表',
+  seller: '卖家列表',
+  product: '商品列表',
+  order: '订单列表',
+  data: '销售情况统计',
+  logistics: '物流管理',
+  help: '帮助中心'
+}
+
+const currentPageTitle = computed(() => {
+  return pageTitles[currentMenu.value] || '首页'
+})
+
+const handleMenuChange = (menuId) => {
+  currentMenu.value = menuId
+}
+
+const handleSubMenuChange = (subMenuId) => {
+  currentSubMenu.value = subMenuId
+}
+
+const toggleUserMenu = () => {
+  showUserMenu.value = !showUserMenu.value
+}
+
+const openChangePasswordModal = () => {
+  showUserMenu.value = false
+  showPasswordModal.value = true
+  passwordForm.value = {
+    newPassword: '',
+    confirmPassword: ''
+  }
+  passwordError.value = ''
+}
+
+const closePasswordModal = () => {
+  showPasswordModal.value = false
+  passwordForm.value = {
+    newPassword: '',
+    confirmPassword: ''
+  }
+  passwordError.value = ''
+}
+
+const submitChangePassword = async () => {
+  passwordError.value = ''
+  
+  if (!passwordForm.value.newPassword) {
+    passwordError.value = '请输入新密码'
+    return
+  }
+  
+  if (passwordForm.value.newPassword.length < 6) {
+    passwordError.value = '密码长度不能少于6位'
+    return
+  }
+  
+  if (!passwordForm.value.confirmPassword) {
+    passwordError.value = '请确认密码'
+    return
+  }
+  
+  if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
+    passwordError.value = '两次输入的密码不一致'
+    return
+  }
+  
+  loading.value = true
+  
+  try {
+    const response = await axios.post('/admin/updatePwd', {
+      id: adminInfo.value.id,
+      password: passwordForm.value.newPassword
+    })
+    
+    if (response.code === 200) {
+      alert('密码修改成功，请重新登录')
+      closePasswordModal()
+      logout()
+    } else {
+      passwordError.value = response.msg || '修改密码失败'
+    }
+  } catch (error) {
+    console.error('修改密码失败:', error)
+    passwordError.value = error.response?.data?.msg || '修改密码失败，请稍后重试'
+  } finally {
+    loading.value = false
+  }
+}
+
 const logout = () => {
+  showUserMenu.value = false
   localStorage.removeItem('admin')
   router.push('/login')
 }
 
-// ========== 生命周期 ==========
 onMounted(() => {
-  // 获取管理员列表
-  axios.get('/api/admin/getAll').then(res => {
-    adminList.value = res.data.data
-  }).catch(err => {
-    console.error('获取管理员列表失败', err)
-    alert('获取管理员列表失败，请刷新重试')
+  const admin = localStorage.getItem('admin')
+  if (admin) {
+    try {
+      const adminObj = JSON.parse(admin)
+      adminInfo.value = {
+        id: adminObj.id,
+        userName: adminObj.userName || '管理员'
+      }
+    } catch (e) {
+      console.error('解析admin信息失败', e)
+    }
+  }
+  
+  document.addEventListener('click', (e) => {
+    const userMenu = document.querySelector('.user-info')
+    if (userMenu && !userMenu.contains(e.target)) {
+      showUserMenu.value = false
+    }
   })
 })
-
-// 组件卸载时释放 blob URL，避免内存泄漏
-onUnmounted(() => {
-  if (currentBlobUrl) {
-    URL.revokeObjectURL(currentBlobUrl)
-  }
-})
-
-// ========== 图片上传与显示 ==========
-function handleFileChange(e) {
-  const file = e.target.files[0]
-  if (file && file.type.startsWith('image/')) {
-    selectedFile.value = file
-  } else {
-    alert('请选择一个图片文件')
-    selectedFile.value = null
-  }
-}
-
-async function submitUpload() {
-  if (!selectedFile.value) {
-    alert('请先选择图片文件')
-    return
-  }
-
-  // 1. 构建 FormData 上传文件
-  const formData = new FormData()
-  formData.append('file', selectedFile.value)
-
-  try {
-    // 上传文件，后端返回完整的 COS URL
-    const uploadRes = await axios.post('/api/file/upload', formData)
-    const cosUrl = uploadRes.data.data   // 例如 "https://bucket.cos.region.myqcloud.com/xxx.jpg"
-    if (!cosUrl) {
-      throw new Error('上传返回的 URL 为空')
-    }
-
-    // 2. 调用下载代理接口，获取图片二进制流
-    const downloadRes = await axios.get('/api/file/download', {
-      params: { fileUrl: cosUrl },
-      responseType: 'blob'   // 关键：必须以 blob 形式接收二进制数据
-    })
-
-    // 3. 检查响应是否为空或类型不正确
-    if (!downloadRes.data || downloadRes.data.size === 0) {
-      throw new Error('下载接口返回的图片数据为空')
-    }
-
-    // 4. 从响应头或 blob 类型中推断 MIME 类型，用于创建 Blob
-    let mimeType = downloadRes.headers['content-type']
-    if (!mimeType || !mimeType.startsWith('image/')) {
-      // 如果后端返回通用的 octet-stream，可以根据文件后缀简单处理
-      // 这里简化：默认使用 image/jpeg（实际可以更灵活）
-      mimeType = 'image/jpeg'
-    }
-
-    // 5. 创建 Blob 并生成临时 URL
-    const blob = new Blob([downloadRes.data], { type: mimeType })
-    const newBlobUrl = URL.createObjectURL(blob)
-
-    // 6. 释放旧的 blob URL
-    if (currentBlobUrl) {
-      URL.revokeObjectURL(currentBlobUrl)
-    }
-
-    // 7. 更新显示
-    currentBlobUrl = newBlobUrl
-    imageBlobUrl.value = newBlobUrl
-    alert('上传并加载成功！')
-  } catch (error) {
-    console.error('图片处理失败：', error)
-    if (error.response) {
-      // 后端返回了错误状态码（如 404, 500）
-      alert(`图片处理失败：服务器错误 ${error.response.status}`)
-    } else {
-      alert(`图片处理失败：${error.message}`)
-    }
-    // 清空显示
-    if (currentBlobUrl) {
-      URL.revokeObjectURL(currentBlobUrl)
-      currentBlobUrl = ''
-    }
-    imageBlobUrl.value = ''
-  }
-}
-
-// ========== 管理员修改密码 ==========
-function openEditModal(admin) {
-  currentAdmin.value = admin
-  newPassword.value = ''
-  showModal.value = true
-}
-
-async function submitUpdatePwd() {
-  if (newPassword.value.length < 6) {
-    alert('密码长度不能少于6位')
-    return
-  }
-  try {
-    await axios.post(`/api/admin/updatePwd/${currentAdmin.value.id}`, null, {
-      params: { password: newPassword.value }
-    })
-    alert('修改密码成功')
-    showModal.value = false
-  } catch (err) {
-    console.error('修改密码失败', err)
-    alert('修改密码失败，请稍后重试')
-  }
-}
 </script>
 
 <style scoped>
-.admin-container { 
-  padding: 30px; 
-  position: relative;
+.admin-wrapper {
+  display: flex;
+  min-height: 100vh;
 }
 
-.header {
+.main-content {
+  flex: 1;
+  margin-left: 200px;
+  background-color: #f5f7fa;
+}
+
+.top-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  padding: 15px 20px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  position: relative;
 }
 
-.logout-btn {
-  background-color: #f56c6c;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.logout-btn:hover {
-  background-color: #f78989;
-}
-
-.upload-section { 
-  margin-bottom: 30px; 
-}
-
-.image-preview img { 
-  width: 300px; 
-  margin-top: 10px; 
-  border-radius: 8px; 
-}
-
-.admin-item { 
-  display: flex; 
-  gap: 20px; 
-  padding: 12px; 
-  border: 1px solid #eee; 
-  margin: 10px 0; 
+.header-left {
+  display: flex;
   align-items: center;
 }
 
-.edit-btn { 
-  background: #409eff; 
-  color: white; 
-  padding: 6px 12px; 
-  border: none; 
-  border-radius: 4px; 
-  cursor: pointer; 
+.page-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
 }
 
-.modal { 
-  position: fixed; 
-  top: 0; 
-  left: 0; 
-  width: 100%; 
-  height: 100%; 
-  background: rgba(0,0,0,0.5); 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+.header-right {
+  display: flex;
+  align-items: center;
+  position: relative;
 }
 
-.modal-content { 
-  background: white; 
-  padding: 30px; 
-  border-radius: 8px; 
-  width: 400px; 
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-.btns { 
-  display: flex; 
-  gap: 10px; 
-  justify-content: flex-end; 
-  margin-top: 10px; 
+.user-info:hover {
+  background-color: #f5f5f5;
 }
 
-.tip { 
-  color: red; 
-  font-size: 12px; 
+.user-name {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.user-phone {
+  font-size: 12px;
+  color: #999;
+}
+
+.dropdown-arrow {
+  font-size: 10px;
+  color: #999;
+  margin-left: 5px;
+}
+
+.user-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 150px;
+  z-index: 1000;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 14px;
+  color: #333;
+}
+
+.dropdown-item:hover {
+  background-color: #f5f5f5;
+}
+
+.dropdown-item.logout {
+  border-top: 1px solid #eee;
+  color: #f56c6c;
+}
+
+.dropdown-icon {
+  font-size: 16px;
+}
+
+.content-area {
+  padding: 20px;
+  min-height: calc(100vh - 60px);
+}
+
+.empty-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  color: #999;
+}
+
+.empty-icon {
+  font-size: 60px;
+  margin-bottom: 20px;
+}
+
+.empty-text {
+  font-size: 16px;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 8px;
+  width: 450px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.modal-close {
+  font-size: 24px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close:hover {
+  color: #333;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.form-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.form-item label {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.required {
+  color: #f56c6c;
+}
+
+.form-item input {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+.form-item input:focus {
+  outline: none;
+  border-color: #1a237e;
+}
+
+.form-item input:disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: #f56c6c;
+  font-size: 13px;
+  margin-top: -10px;
+  margin-bottom: 15px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+}
+
+.btn-cancel,
+.btn-confirm {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-cancel {
+  background: #f5f5f5;
+  color: #666;
+  border: 1px solid #ddd;
+}
+
+.btn-cancel:hover {
+  background: #e0e0e0;
+}
+
+.btn-confirm {
+  background: #1a237e;
+  color: white;
+}
+
+.btn-confirm:hover:not(:disabled) {
+  background: #283593;
+}
+
+.btn-confirm:disabled {
+  background: #9fa8da;
+  cursor: not-allowed;
 }
 </style>
