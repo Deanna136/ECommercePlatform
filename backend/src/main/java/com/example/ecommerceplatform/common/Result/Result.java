@@ -25,4 +25,9 @@ public class Result<T> {
     public static <T> Result<T> error(Integer code,String msg){
         return new Result<>(code,msg,null);
     }
+
+    // 失败
+    public static <T> Result<T> failure(String msg) {
+        return new Result<>(400, msg, null);
+    }
 }

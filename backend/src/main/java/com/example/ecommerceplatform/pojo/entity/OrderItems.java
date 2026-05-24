@@ -18,4 +18,13 @@ public class OrderItems {
     private float totalPrice;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
+    /**
+     * 商品名称快照
+     */
+    private String productName;
+
+    /**
+     * 商品编号快照
+     */
+    private String productNo;
 }

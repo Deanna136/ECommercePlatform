@@ -19,4 +19,23 @@ public class Orders {
     private OrdersStatusEnum status;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
+    /**
+     * 买家姓名
+     */
+    private String buyerName;
+
+    /**
+     * 买家电话
+     */
+    private String buyerPhone;
+
+    /**
+     * 买家地址
+     */
+    private String buyerAddress;
+
+    /**
+     * 异常原因
+     */
+    private String abnormalReason;
 }

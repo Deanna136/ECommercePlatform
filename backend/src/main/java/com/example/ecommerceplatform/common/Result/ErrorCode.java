@@ -99,6 +99,7 @@ public enum ErrorCode {
     // ==================== 空指针异常 ====================
     NULL_POINTER(500, "空指针异常");
 
+
     private final int code;
     private final String msg;
 

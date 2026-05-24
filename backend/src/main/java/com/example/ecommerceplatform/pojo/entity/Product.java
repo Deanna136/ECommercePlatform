@@ -23,6 +23,7 @@ public class Product {
     private String description;
     private ProductStatusEnum status;
     private Integer salesCount;
+    private Long sellerId;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }
