@@ -1,0 +1,28 @@
+{
+  "commands": {
+    "start-backend": {
+      "description": "启动 Spring Boot 后端服务",
+      "command": "cd backend && mvn spring-boot:run"
+    },
+    "start-frontend": {
+      "description": "启动 Vue 前端开发服务器",
+      "command": "cd vuefront/ecommerceplatform && npm run serve"
+    },
+    "build-backend": {
+      "description": "构建后端项目",
+      "command": "cd backend && mvn clean package"
+    },
+    "build-frontend": {
+      "description": "构建前端项目",
+      "command": "cd vuefront/ecommerceplatform && npm run build"
+    },
+    "test-backend": {
+      "description": "运行后端测试",
+      "command": "cd backend && mvn test"
+    },
+    "lint-frontend": {
+      "description": "检查前端代码规范",
+      "command": "cd vuefront/ecommerceplatform && npm run lint"
+    }
+  }
+}

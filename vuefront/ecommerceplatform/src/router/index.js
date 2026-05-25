@@ -1,45 +1,47 @@
+
 import { createRouter, createWebHistory } from 'vue-router'
-import Login from '../views/Login.vue'
-import Admin from '../views/Admin.vue'   // 您的原 admin.vue 组件路径
+import { sellerRoutes } from './sellerRouter'
+import { useSellerUserStore } from '@/stores/sellerUserStore'
+
 
 const routes = [
   {
-    path: '/login',
-    name: 'Login',
-    component: Login,
-    meta: { requiresAuth: false }
-  },
-  {
-    path: '/admin',
-    name: 'Admin',
-    component: Admin,
-    meta: { requiresAuth: true }   // 需要登录才能访问
-  },
-  {
     path: '/',
-    redirect: '/login'   // 根路径重定向到 admin
-  }
+    redirect: '/seller/login'
+  },
+
+  ...sellerRoutes
 ]
+
 
 const router = createRouter({
   history: createWebHistory(),
   routes
 })
 
-// 全局前置守卫：检查登录状态
+// 卖家路由守卫
 router.beforeEach((to, from, next) => {
-  const adminStr = localStorage.getItem('admin')
-  const isAuthenticated = adminStr !== null
+  const sellerUserStore = useSellerUserStore()
 
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    // 需要登录但未登录，跳转到登录页
-    next('/login')
-  } else if (to.path === '/login' && isAuthenticated) {
-    // 已登录的情况下访问登录页，直接跳转到 admin
-    next('/admin')
-  } else {
-    next()
+  // 不需要登录的页面
+  const whiteList = ['/seller/login', '/seller/register']
+
+  // 访问卖家页面
+  if (to.path.startsWith('/seller')) {
+    // 白名单直接放行
+    if (whiteList.includes(to.path)) {
+      next()
+      return
+    }
+
+    // 没有token
+    if (!sellerUserStore.sellerToken) {
+      next('/seller/login')
+      return
+    }
   }
+
+  next()
 })
 
 export default router

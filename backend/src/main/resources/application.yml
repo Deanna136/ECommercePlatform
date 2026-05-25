@@ -9,8 +9,8 @@ mybatis:
 
 tencent:
   cos:
-    secretId:
-    secretKey:
+    secretId: AKIDnQr3BINFY1OpVF94qwrYAd3Mc1EC5oTy 
+    secretKey: TtAE6nPp573oNjsnUyLYYK6jQylNmxud
     region: ap-chengdu
     bucketName: e-commerce-platform-1332476381
     baseUrl: https://e-commerce-platform-1332476381.cos.ap-chengdu.myqcloud.com/
