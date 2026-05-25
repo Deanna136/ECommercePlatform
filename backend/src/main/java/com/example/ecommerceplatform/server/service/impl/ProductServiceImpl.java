@@ -13,6 +13,8 @@ import com.example.ecommerceplatform.server.service.ProductService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -136,7 +138,7 @@ public class ProductServiceImpl implements ProductService {
                 .name(p.getName())
                 .category(p.getCategory() != null ? p.getCategory().name() : null)
                 .sku(p.getSku())
-                .price((double) p.getPrice())
+                .price(BigDecimal.valueOf(p.getPrice()).setScale(2, RoundingMode.HALF_UP).doubleValue())
                 .image(p.getImage())
                 .description(p.getDescription())
                 .sellerId(p.getSellerId())

@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -80,8 +81,8 @@ public class BuyerOrderServiceImpl implements BuyerOrderService {
                     .productName(product != null ? product.getName() : null)
                     .productNo(product != null ? product.getProductNo() : null)
                     .quantity(item.getQuantity())
-                    .unitPrice((double) item.getUnitPrice())
-                    .totalPrice((double) item.getTotalPrice())
+                    .unitPrice(BigDecimal.valueOf(item.getUnitPrice()).setScale(2, RoundingMode.HALF_UP).doubleValue())
+                    .totalPrice(BigDecimal.valueOf(item.getTotalPrice()).setScale(2, RoundingMode.HALF_UP).doubleValue())
                     .build());
         }
         detail.setOrderItems(itemVOs);
@@ -151,7 +152,7 @@ public class BuyerOrderServiceImpl implements BuyerOrderService {
                 throw new BusinessException(ErrorCode.STOCK_NOT_ENOUGH);
             }
 
-            BigDecimal unitPrice = BigDecimal.valueOf(product.getPrice());
+            BigDecimal unitPrice = BigDecimal.valueOf(product.getPrice()).setScale(2, RoundingMode.HALF_UP);
             BigDecimal itemTotal = unitPrice.multiply(BigDecimal.valueOf(quantity));
             totalAmount = totalAmount.add(itemTotal);
 
@@ -166,7 +167,7 @@ public class BuyerOrderServiceImpl implements BuyerOrderService {
         Orders orders = new Orders();
         orders.setBuyerId(buyerId);
         orders.setSellerId(sellerId);
-        orders.setAmount(totalAmount.floatValue());
+        orders.setAmount(totalAmount.setScale(2, RoundingMode.HALF_UP).floatValue());
         orders.setStatus(com.example.ecommerceplatform.common.enumeration.OrdersStatusEnum.paid);
         orders.setPhone(dto.getPhone());
         orders.setAddress(dto.getAddress());
@@ -183,7 +184,7 @@ public class BuyerOrderServiceImpl implements BuyerOrderService {
         return BuyerOrderCreateVO.builder()
                 .id(orders.getId())
                 .orderNo(orderNo)
-                .amount(totalAmount.doubleValue())
+                .amount(totalAmount.setScale(2, RoundingMode.HALF_UP).doubleValue())
                 .status("paid")
                 .createTime(orders.getCreateTime())
                 .build();
@@ -278,7 +279,7 @@ public class BuyerOrderServiceImpl implements BuyerOrderService {
                 .sellerId(order.getSellerId())
                 .sellerName(seller != null ? seller.getName() : null)
                 .storeName(seller != null ? seller.getStoreName() : null)
-                .amount((double) order.getAmount())
+                .amount(BigDecimal.valueOf(order.getAmount()).setScale(2, RoundingMode.HALF_UP).doubleValue())
                 .status(order.getStatus() != null ? order.getStatus().name() : null)
                 .createTime(order.getCreateTime())
                 .updateTime(order.getUpdateTime())
@@ -293,7 +294,7 @@ public class BuyerOrderServiceImpl implements BuyerOrderService {
                 .sellerId(order.getSellerId())
                 .sellerName(seller != null ? seller.getName() : null)
                 .storeName(seller != null ? seller.getStoreName() : null)
-                .amount((double) order.getAmount())
+                .amount(BigDecimal.valueOf(order.getAmount()).setScale(2, RoundingMode.HALF_UP).doubleValue())
                 .status(order.getStatus() != null ? order.getStatus().name() : null)
                 .phone(order.getPhone())
                 .address(order.getAddress())

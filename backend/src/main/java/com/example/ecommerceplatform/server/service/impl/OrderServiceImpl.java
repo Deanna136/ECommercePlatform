@@ -12,6 +12,8 @@ import com.example.ecommerceplatform.server.service.OrderService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -63,8 +65,8 @@ public class OrderServiceImpl implements OrderService {
                     .productName(product != null ? product.getName() : null)
                     .productNo(product != null ? product.getProductNo() : null)
                     .quantity(item.getQuantity())
-                    .unitPrice((double) item.getUnitPrice())
-                    .totalPrice((double) item.getTotalPrice())
+                    .unitPrice(BigDecimal.valueOf(item.getUnitPrice()).setScale(2, RoundingMode.HALF_UP).doubleValue())
+                    .totalPrice(BigDecimal.valueOf(item.getTotalPrice()).setScale(2, RoundingMode.HALF_UP).doubleValue())
                     .build());
         }
         vo.setOrderItems(itemVOs);
