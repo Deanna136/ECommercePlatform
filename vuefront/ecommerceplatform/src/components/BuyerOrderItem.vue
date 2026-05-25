@@ -12,10 +12,10 @@
       <span class="order-amount">金额：<span class="buyer-price">¥{{ orderInfo.amount }}</span></span>
     </div>
     <div class="order-actions">
-      <el-button size="small" class="buyer-btn-secondary" @click="$emit('detail', orderInfo.id)">订单详情</el-button>
-      <el-button v-if="canRefund" size="small" class="buyer-btn-light" @click="$emit('refund', orderInfo)">申请退单</el-button>
-      <el-button v-if="canUpdateInfo" size="small" class="buyer-btn-light" @click="$emit('update-info', orderInfo)">修改信息</el-button>
-      <el-button v-if="canReportAbnormal" size="small" class="buyer-btn-light" @click="$emit('report-abnormal', orderInfo)">异常申报</el-button>
+      <el-button size="small" class="btn-light-gray" @click="$emit('detail', orderInfo.id)">订单详情</el-button>
+      <el-button v-if="canRefund" size="small" class="btn-dark-gray" @click="$emit('refund', orderInfo)">申请退单</el-button>
+      <el-button v-if="canUpdateInfo" size="small" class="btn-light-gray" @click="$emit('update-info', orderInfo)">修改信息</el-button>
+      <el-button v-if="canReportAbnormal" size="small" class="btn-dark-gray" @click="$emit('report-abnormal', orderInfo)">异常申报</el-button>
     </div>
   </div>
 </template>
@@ -102,6 +102,28 @@ const canReportAbnormal = computed(() => {
   display: flex;
   gap: var(--buyer-spacing-sm);
   justify-content: flex-end;
+}
+/* 浅灰色按钮 - 订单详情、修改信息 */
+.btn-light-gray {
+  background-color: #f4f4f5;
+  border-color: #e4e4e7;
+  color: #909399;
+}
+.btn-light-gray:hover {
+  background-color: #e9e9eb;
+  border-color: #d3d4d6;
+  color: #808396;
+}
+/* 深灰色按钮 - 申请退单、异常申报 */
+.btn-dark-gray {
+  background-color: #606266;
+  border-color: #606266;
+  color: #fff;
+}
+.btn-dark-gray:hover {
+  background-color: #4a4a4d;
+  border-color: #4a4a4d;
+  color: #fff;
 }
 
 @media (max-width: 768px) {

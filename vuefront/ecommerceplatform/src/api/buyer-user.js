@@ -1,4 +1,4 @@
-import request from './request'
+import request from './buyer-request'
 
 export const userApi = {
   login(data) {
@@ -19,5 +19,18 @@ export const userApi = {
   },
   clearUserInfo() {
     localStorage.removeItem('buyer_user')
+  },
+  // 上传图片到腾讯云
+  async uploadImage(file) {
+    const formData = new FormData()
+    formData.append('file', file)
+    return request({
+      url: '/buyer/file/upload',
+      method: 'post',
+      data: formData,
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
   }
 }

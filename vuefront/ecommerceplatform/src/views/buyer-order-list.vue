@@ -1,11 +1,9 @@
 <template>
   <div class="buyer-container">
-    <div class="page-header">
-      <el-button @click="$router.push('/buyer/home')" class="back-btn buyer-btn-light">
-        <el-icon><ArrowLeft /></el-icon>
-        返回
-      </el-button>
-      <h2 class="buyer-title">我的订单</h2>
+    <div class="breadcrumb">
+      <span class="breadcrumb-link" @click="$router.push('/buyer/home')">首页</span>
+      <span class="breadcrumb-separator">></span>
+      <span class="breadcrumb-current">我的订单</span>
     </div>
 
     <el-form :model="queryForm" inline class="filter-form buyer-card" size="default">
@@ -61,7 +59,6 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { ArrowLeft } from '@element-plus/icons-vue'
 import { orderApi } from '@/api/buyer-order'
 import BuyerOrderItem from '@/components/BuyerOrderItem.vue'
 
@@ -126,9 +123,17 @@ const loadOrders = async () => {
 }
 
 const handleSearch = async () => {
+  // 验证卖家ID必须是数字
+  if (queryForm.sellerId) {
+    if (!/^\d+$/.test(queryForm.sellerId)) {
+      ElMessage.error('卖家ID必须是数字')
+      return
+    }
+  }
+  
   const params = {}
   if (queryForm.orderNo) params.orderNo = queryForm.orderNo
-  if (queryForm.sellerId) params.sellerId = queryForm.sellerId
+  if (queryForm.sellerId) params.sellerId = parseInt(queryForm.sellerId)
   if (queryForm.status) params.status = queryForm.status
   if (dateRange.value && dateRange.value.length === 2) {
     params.startTime = dateRange.value[0]
@@ -143,7 +148,13 @@ const handleSearch = async () => {
     const data = await orderApi.queryOrders(params)
     orderList.value = Array.isArray(data) ? data : []
   } catch (error) {
-    ElMessage.error(error?.message || '查询失败')
+    const errMsg = error?.message || '查询失败'
+    // 判断是否是类型转换错误（如卖家ID不是数字）
+    if (errMsg.includes('typeMismatch') || errMsg.includes('NumberFormatException')) {
+      ElMessage.error('输入参数格式错误，请检查输入内容')
+    } else {
+      ElMessage.error(errMsg)
+    }
   } finally {
     loading.value = false
   }
@@ -177,15 +188,29 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.page-header {
+/* 面包屑导航 */
+.breadcrumb {
   display: flex;
   align-items: center;
-  gap: var(--buyer-spacing-md);
+  gap: 8px;
   margin-bottom: var(--buyer-spacing-lg);
+  font-size: 14px;
 }
-.back-btn {
-  padding: 8px 16px;
+.breadcrumb-link {
+  color: #606266;
+  cursor: pointer;
 }
+.breadcrumb-link:hover {
+  color: var(--buyer-color-primary, #409EFF);
+  text-decoration: underline;
+}
+.breadcrumb-separator {
+  color: #909399;
+}
+.breadcrumb-current {
+  color: #606266;
+}
+
 .filter-form {
   padding: var(--buyer-spacing-md) var(--buyer-spacing-lg);
   margin-bottom: var(--buyer-spacing-lg);

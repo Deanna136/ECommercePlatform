@@ -40,20 +40,33 @@ const handleSearch = () => {
 
 <style scoped>
 .search-bar-wrapper {
-  max-width: 600px;
-  margin: 0 auto 24px;
+  max-width: 750px;
+  width: 100%;
+  margin: 0 auto;
 }
 .search-input :deep(.el-input__wrapper) {
   border-radius: 8px 0 0 8px;
   box-shadow: 0 0 0 1px #e8e8e8;
+  height: 40px;
+  align-items: center;
+}
+.search-input :deep(.el-input__inner) {
+  height: 40px;
+  line-height: 40px;
 }
 .search-input :deep(.el-input-group__append) {
   border-radius: 0 8px 8px 0;
   background-color: #333;
   border-color: #333;
+  height: 40px;
+  display: flex;
+  align-items: center;
 }
 .search-input :deep(.el-input-group__append button) {
   color: white;
   border: none;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 20px;
 }
 </style>

@@ -8,12 +8,12 @@
       </div>
       <BuyerSearchBar :keyword="keyword" @search="handleSearch" />
       <div class="user-actions">
-        <el-button class="cart-btn" @click="$router.push('/buyer/cart')">
-          <el-badge :value="cartCount" :hidden="cartCount === 0">
+        <el-badge :value="cartCount" :hidden="cartCount === 0" class="cart-badge">
+          <el-button class="cart-btn" @click="$router.push('/buyer/cart')">
             <el-icon><ShoppingCart /></el-icon>
-          </el-badge>
-          <span>购物车</span>
-        </el-button>
+            <span>购物车</span>
+          </el-button>
+        </el-badge>
         <el-dropdown @command="handleUserCommand">
           <div class="user-info">
             <el-icon class="user-avatar"><User /></el-icon>
@@ -182,14 +182,19 @@ onMounted(() => {
   height: 44px;
 }
 .brand {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 26px;
+  font-weight: 1000;
   color: var(--buyer-text-primary);
 }
 .user-actions {
   display: flex;
   align-items: center;
   gap: 20px;
+}
+.cart-badge :deep(.el-badge__content) {
+  top: -8px;
+  right: -8px;
+  transform: none;
 }
 .cart-btn {
   background-color: #e8e8e8;
@@ -200,6 +205,7 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
+  position: relative;
 }
 .cart-btn:hover {
   background-color: #d0d0d0;

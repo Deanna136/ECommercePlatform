@@ -10,6 +10,7 @@ import com.qcloud.cos.auth.COSCredentials;
 import com.qcloud.cos.model.COSObject;
 import com.qcloud.cos.model.GetObjectRequest;
 import com.qcloud.cos.model.PutObjectRequest;
+import com.qcloud.cos.model.CannedAccessControlList;
 import com.qcloud.cos.region.Region;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,20 +27,19 @@ public class TencentCosUtil {
     @Autowired
     private TencentCosProperties cosProperties;
 
-    //1.创建cos客户端
-    private COSClient getCosClient(){
-        System.out.println(cosProperties.getSecretId()+","+cosProperties.getSecretKey());
+    // 1.创建cos客户端
+    private COSClient getCosClient() {
+        System.out.println(cosProperties.getSecretId() + "," + cosProperties.getSecretKey());
         COSCredentials cosCredentials = new BasicCOSCredentials(
                 cosProperties.getSecretId(),
-                cosProperties.getSecretKey()
-        );
+                cosProperties.getSecretKey());
         ClientConfig clientConfig = new ClientConfig(new Region(cosProperties.getRegion()));
-        return new COSClient(cosCredentials,clientConfig);
+        return new COSClient(cosCredentials, clientConfig);
     }
 
-    //2.上传图片
-    public String upload(MultipartFile file){
-        COSClient cosClient =getCosClient();
+    // 2.上传图片
+    public String upload(MultipartFile file) {
+        COSClient cosClient = getCosClient();
         try {
             String originalFilename = file.getOriginalFilename();
             String suffix = originalFilename.substring(originalFilename.lastIndexOf("."));
@@ -50,8 +50,9 @@ public class TencentCosUtil {
                     cosProperties.getBucketName(),
                     key,
                     file.getInputStream(),
-                    null
-            );
+                    null);
+            // 设置对象为公开读权限
+            request.setCannedAcl(CannedAccessControlList.PublicRead);
             cosClient.putObject(request);
 
             // 直接使用你配置的 baseUrl 拼接
@@ -67,7 +68,7 @@ public class TencentCosUtil {
         }
     }
 
-    //3.下载图片
+    // 3.下载图片
     public InputStream getFileInputStream(String fileUrl) {
         COSClient cosClient = getCosClient();
         try {
@@ -80,8 +81,8 @@ public class TencentCosUtil {
         }
     }
 
-    //4.删除图片
-    public void delete(String fileUrl){
+    // 4.删除图片
+    public void delete(String fileUrl) {
         if (fileUrl == null || fileUrl.isEmpty()) {
             throw new CosException(ErrorCode.URL_NULL);
         }

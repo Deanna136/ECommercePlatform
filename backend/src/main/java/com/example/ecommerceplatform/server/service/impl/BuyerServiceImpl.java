@@ -129,7 +129,6 @@ public class BuyerServiceImpl implements BuyerService {
         cart.setBuyerId(buyer.getId());
         cartMapper.insert(cart);
 
-
     }
 
     @Override
@@ -166,7 +165,6 @@ public class BuyerServiceImpl implements BuyerService {
         // 5. 令牌存入Redis
         redisUtil.set("buyer_token:" + token, buyer.getId(), jwtProperties.getBuyerTtl(), TimeUnit.MILLISECONDS);
 
-
         // 6. 封装VO返回
         return BuyerLoginVO.builder()
                 .id(buyer.getId())
@@ -187,7 +185,7 @@ public class BuyerServiceImpl implements BuyerService {
         BeanUtils.copyProperties(buyerUpdateDTO, buyer);
         buyer.setId(buyerId);
         buyer.setUpdateTime(LocalDateTime.now());
-        log.info("{}",buyer);
+        log.info("{}", buyer);
 
         buyerMapper.update(buyer);
     }

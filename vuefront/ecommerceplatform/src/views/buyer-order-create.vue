@@ -1,12 +1,10 @@
 <template>
   <div class="buyer-container">
     <div class="create-card buyer-card">
-      <div class="page-header">
-        <el-button @click="goBack" class="back-btn buyer-btn-light">
-          <el-icon><ArrowLeft /></el-icon>
-          返回
-        </el-button>
-        <h2 class="buyer-title">确认订单</h2>
+      <div class="breadcrumb">
+        <span class="breadcrumb-link" @click="$router.push('/buyer/home')">首页</span>
+        <span class="breadcrumb-separator">></span>
+        <span class="breadcrumb-current">确认订单</span>
       </div>
 
       <!-- 收货地址 -->
@@ -20,8 +18,21 @@
             <el-input v-model="addressForm.phone" placeholder="请输入联系电话" class="buyer-input" />
           </el-form-item>
         </div>
-        <el-form-item label="收货地址" prop="address">
-          <el-input v-model="addressForm.address" placeholder="请输入详细收货地址" class="buyer-input" />
+        <el-form-item label="省市区" prop="addressCascader">
+          <el-cascader
+            v-if="addressLoaded"
+            v-model="addressCascaderValue"
+            :options="addressOptions"
+            :props="{ expandTrigger: 'hover' }"
+            placeholder="请选择省/市/区"
+            clearable
+            class="address-cascader"
+            style="width: 100%; min-width: 0;"
+          />
+          <el-input v-else placeholder="加载中..." disabled class="address-cascader" style="width: 100%;" />
+        </el-form-item>
+        <el-form-item label="详细地址" prop="detailAddress">
+          <el-input v-model="addressForm.detailAddress" placeholder="请输入详细地址" class="buyer-input" />
         </el-form-item>
       </el-form>
 
@@ -55,7 +66,7 @@
 
       <div class="action-bar">
         <el-button class="buyer-btn-secondary" @click="goBack">取消</el-button>
-        <el-button class="buyer-btn-primary" @click="submitOrder" :loading="submitting" :disabled="!canSubmit">
+        <el-button class="buyer-btn-primary" @click="submitOrder" :loading="submitting">
           提交订单
         </el-button>
       </div>
@@ -71,17 +82,109 @@ import { ArrowLeft } from '@element-plus/icons-vue'
 import { orderApi } from '@/api/buyer-order'
 import { userApi } from '@/api/buyer-user'
 import { cartApi } from '@/api/buyer-cart'
+import pca from 'china-area-data'
 
 const router = useRouter()
 const submitting = ref(false)
 
 const orderItems = ref([])
 const currentSeller = ref(null)
+
+// 省市区级联数据（使用china-area-data包）
+const addressOptions = ref([])
+const addressLoaded = ref(false)
+
+// 初始化地址数据
+const initAddressData = () => {
+  const provinces = []
+  const provinceData = pca['86'] || {}
+  
+  for (let provinceCode in provinceData) {
+    const province = {
+      value: provinceCode,
+      label: provinceData[provinceCode],
+      children: []
+    }
+    
+    const cityData = pca[provinceCode] || {}
+    for (let cityCode in cityData) {
+      const cityLabel = cityData[cityCode]
+      const city = {
+        value: cityCode,
+        label: cityLabel,
+        children: []
+      }
+      
+      const districtData = pca[cityCode] || {}
+      const districtKeys = Object.keys(districtData)
+      
+      // 如果城市下只有一个子项且是"市辖区"，则跳过市辖区层级
+      if (districtKeys.length === 1 && districtData[districtKeys[0]] === '市辖区') {
+        const subDistrictData = pca[districtKeys[0]] || {}
+        for (let subDistrictCode in subDistrictData) {
+          city.children.push({
+            value: subDistrictCode,
+            label: subDistrictData[subDistrictCode]
+          })
+        }
+      } else {
+        // 检查是否需要进一步展开（处理市辖区嵌套）
+        let hasDistrict = false
+        for (let districtCode of districtKeys) {
+          const districtLabel = districtData[districtCode]
+          
+          // 如果当前项是"市辖区"且有子项，则展开它
+          if (districtLabel === '市辖区') {
+            const subDistrictData = pca[districtCode] || {}
+            if (Object.keys(subDistrictData).length > 0) {
+              // 展开市辖区的子项
+              for (let subDistrictCode in subDistrictData) {
+                city.children.push({
+                  value: subDistrictCode,
+                  label: subDistrictData[subDistrictCode]
+                })
+              }
+              hasDistrict = true
+            }
+          } else {
+            // 正常区县，直接添加
+            city.children.push({
+              value: districtCode,
+              label: districtLabel
+            })
+            hasDistrict = true
+          }
+        }
+        
+        // 如果没有找到实际区县，保持原样
+        if (!hasDistrict) {
+          for (let districtCode in districtData) {
+            city.children.push({
+              value: districtCode,
+              label: districtData[districtCode]
+            })
+          }
+        }
+      }
+      
+      province.children.push(city)
+    }
+    provinces.push(province)
+  }
+  addressOptions.value = provinces
+  addressLoaded.value = true
+}
+
+// 级联选择值
+const addressCascaderValue = ref([])
+
 const addressForm = reactive({
   receiver: '',
   phone: '',
-  address: ''
+  detailAddress: ''
 })
+
+
 
 // 从用户信息中加载默认收货地址
 const loadDefaultAddress = () => {
@@ -89,8 +192,110 @@ const loadDefaultAddress = () => {
   if (user) {
     addressForm.receiver = user.name || user.userName || ''
     addressForm.phone = user.phone || ''
-    addressForm.address = user.address || ''
+    // 如果用户地址包含省市区信息，尝试解析
+    if (user.address) {
+      parseAddress(user.address)
+    }
   }
+}
+
+// 根据省市区名称获取对应的code
+const getProvinceCode = (provinceName) => {
+  const province = addressOptions.value.find(p => p.label === provinceName)
+  return province ? province.value : ''
+}
+
+const getCityCode = (provinceCode, cityName) => {
+  const province = addressOptions.value.find(p => p.value === provinceCode)
+  if (!province) return ''
+  const city = province.children.find(c => c.label === cityName)
+  return city ? city.value : ''
+}
+
+const getDistrictCode = (provinceCode, cityCode, districtName) => {
+  const province = addressOptions.value.find(p => p.value === provinceCode)
+  if (!province) return ''
+  const city = province.children.find(c => c.value === cityCode)
+  if (!city) return ''
+  const district = city.children.find(d => d.label === districtName)
+  return district ? district.value : ''
+}
+
+// 获取所有省份名称用于匹配
+const getAllProvinceNames = () => {
+  return addressOptions.value.map(p => p.label).join('|')
+}
+
+// 解析地址（从完整地址中分离省市区和详细地址）
+const parseAddress = (fullAddress) => {
+  if (!fullAddress) {
+    addressCascaderValue.value = []
+    addressForm.detailAddress = ''
+    return
+  }
+  
+  let remaining = fullAddress
+  let provinceCode = ''
+  let cityCode = ''
+  let districtCode = ''
+  
+  // 使用所有省份名称进行匹配
+  const provinceNames = getAllProvinceNames()
+  const provincePattern = new RegExp(`^(${provinceNames})`)
+  const provinceMatch = fullAddress.match(provincePattern)
+  
+  if (provinceMatch) {
+    const provinceName = provinceMatch[1]
+    provinceCode = getProvinceCode(provinceName)
+    
+    if (provinceCode) {
+      remaining = remaining.substring(provinceName.length).trim()
+      
+      // 尝试匹配城市
+      const province = addressOptions.value.find(p => p.value === provinceCode)
+      if (province && province.children.length > 0) {
+        const cityNames = province.children.map(c => c.label).join('|')
+        const cityPattern = new RegExp(`^(${cityNames})`)
+        const cityMatch = remaining.match(cityPattern)
+        
+        if (cityMatch) {
+          const cityName = cityMatch[1]
+          cityCode = getCityCode(provinceCode, cityName)
+          
+          if (cityCode) {
+            remaining = remaining.substring(cityName.length).trim()
+            
+            // 尝试匹配区县
+            const city = province.children.find(c => c.value === cityCode)
+            if (city && city.children && city.children.length > 0) {
+              const districtNames = city.children.map(d => d.label).join('|')
+              const districtPattern = new RegExp(`^(${districtNames})`)
+              const districtMatch = remaining.match(districtPattern)
+              
+              if (districtMatch) {
+                const districtName = districtMatch[1]
+                districtCode = getDistrictCode(provinceCode, cityCode, districtName)
+                
+                if (districtCode) {
+                  remaining = remaining.substring(districtName.length).trim()
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // 设置级联选择值（只在有有效选择时设置）
+  const cascaderValues = []
+  if (provinceCode) cascaderValues.push(provinceCode)
+  if (cityCode) cascaderValues.push(cityCode)
+  if (districtCode) cascaderValues.push(districtCode)
+  
+  addressCascaderValue.value = cascaderValues
+  // 详细地址只保存门牌号等用户手动输入的内容
+  addressForm.detailAddress = remaining || ''
 }
 
 const totalQuantity = computed(() => {
@@ -100,8 +305,44 @@ const totalAmount = computed(() => {
   return orderItems.value.reduce((sum, item) => sum + (item.price * item.quantity), 0)
 })
 
+// 从级联选择器获取选中的省市区名称
+const getSelectedAddressLabels = () => {
+  let provinceLabel = ''
+  let cityLabel = ''
+  let districtLabel = ''
+  
+  if (addressCascaderValue.value.length >= 1) {
+    const province = addressOptions.value.find(p => p.value === addressCascaderValue.value[0])
+    provinceLabel = province ? province.label : ''
+  }
+  
+  if (addressCascaderValue.value.length >= 2) {
+    const province = addressOptions.value.find(p => p.value === addressCascaderValue.value[0])
+    if (province) {
+      const city = province.children.find(c => c.value === addressCascaderValue.value[1])
+      cityLabel = city ? city.label : ''
+    }
+  }
+  
+  if (addressCascaderValue.value.length >= 3) {
+    const province = addressOptions.value.find(p => p.value === addressCascaderValue.value[0])
+    if (province) {
+      const city = province.children.find(c => c.value === addressCascaderValue.value[1])
+      if (city) {
+        const district = city.children.find(d => d.value === addressCascaderValue.value[2])
+        districtLabel = district ? district.label : ''
+      }
+    }
+  }
+  
+  return { provinceLabel, cityLabel, districtLabel }
+}
+
 const canSubmit = computed(() => {
-  return addressForm.receiver.trim() && addressForm.phone.trim() && addressForm.address.trim()
+  return addressForm.receiver.trim() && 
+         addressForm.phone.trim() && 
+         addressCascaderValue.value.length >= 3 && 
+         addressForm.detailAddress.trim()
 })
 
 const goBack = () => {
@@ -182,14 +423,39 @@ const initOrderData = async () => {
 }
 
 const submitOrder = async () => {
-  if (!canSubmit.value) {
-    ElMessage.warning('请填写完整的收货信息')
+  // 验证收货人
+  if (!addressForm.receiver || !addressForm.receiver.trim()) {
+    ElMessage.error('请输入收货人姓名')
+    return
+  }
+  // 验证联系电话
+  if (!addressForm.phone || !addressForm.phone.trim()) {
+    ElMessage.error('请输入联系电话')
+    return
+  }
+  // 验证手机号格式
+  if (!addressForm.phone.match(/^1[3-9]\d{9}$/)) {
+    ElMessage.error('联系电话格式不正确，请输入有效的手机号码')
+    return
+  }
+  // 验证省市区（必须选择完整的三级）
+  if (addressCascaderValue.value.length < 3) {
+    ElMessage.error('请选择完整的省/市/区')
+    return
+  }
+  // 验证详细地址
+  if (!addressForm.detailAddress || !addressForm.detailAddress.trim()) {
+    ElMessage.error('请输入详细地址')
     return
   }
 
+  // 从级联选择器获取省市区名称并拼接完整地址
+  const { provinceLabel, cityLabel, districtLabel } = getSelectedAddressLabels()
+  const fullAddress = `${provinceLabel}${cityLabel}${districtLabel}${addressForm.detailAddress}`
+
   const orderData = {
     phone: addressForm.phone,
-    address: addressForm.address,
+    address: fullAddress,
     orderItems: orderItems.value.map(item => ({
       productId: item.productId,
       quantity: item.quantity
@@ -221,12 +487,7 @@ const submitOrder = async () => {
     // 根据错误信息提供更友好的提示
     let friendlyMsg = errMsg
     if (errMsg === '参数校验失败' || errMsg === '参数错误') {
-      // 检查是否是不同商家的商品
-      const storeNames = orderItems.value.map(item => item.storeName)
-      const uniqueStores = [...new Set(storeNames)]
-      if (uniqueStores.length > 1) {
-        friendlyMsg = '不同商家的商品无法合并下单，请分别下单'
-      } else if (!addressForm.phone || !addressForm.address) {
+      if (!addressForm.phone || !addressForm.address) {
         friendlyMsg = '请填写完整的收货信息（手机号和收货地址）'
       } else if (!addressForm.phone.match(/^1[3-9]\d{9}$/)) {
         friendlyMsg = '手机号格式不正确，请重新输入'
@@ -241,6 +502,7 @@ const submitOrder = async () => {
 }
 
 onMounted(() => {
+  initAddressData()
   initOrderData()
   loadDefaultAddress()
 })
@@ -249,6 +511,27 @@ onMounted(() => {
 <style scoped>
 .create-card {
   padding: var(--buyer-spacing-lg);
+}
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: var(--buyer-spacing-lg);
+  font-size: 14px;
+}
+.breadcrumb-link {
+  color: #606266;
+  cursor: pointer;
+}
+.breadcrumb-link:hover {
+  color: var(--buyer-color-primary, #409EFF);
+  text-decoration: underline;
+}
+.breadcrumb-separator {
+  color: #909399;
+}
+.breadcrumb-current {
+  color: #606266;
 }
 .page-header {
   display: flex;
@@ -296,6 +579,9 @@ onMounted(() => {
   padding-top: var(--buyer-spacing-md);
   border-top: 1px solid var(--buyer-border-color);
 }
+.action-bar :deep(.el-button) {
+  width: 120px;
+}
 .address-form {
   padding: var(--buyer-spacing-md);
   border: none;
@@ -307,6 +593,35 @@ onMounted(() => {
 }
 .flex-1 {
   flex: 1;
+  min-width: 120px;
+}
+.address-cascader {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+.address-cascader :deep(.el-cascader) {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+.address-cascader :deep(.el-cascader__input) {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+}
+.address-cascader :deep(.el-input) {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+.address-cascader :deep(.el-input__wrapper) {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+.address-cascader :deep(.el-input__inner) {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+.address-cascader :deep(.el-cascader-menu) {
+  min-width: 200px;
 }
 
 @media (max-width: 768px) {

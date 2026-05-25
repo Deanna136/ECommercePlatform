@@ -8,7 +8,7 @@
       <p v-if="orderId">订单号：{{ orderId }}</p>
       <p v-if="amount">订单金额：¥{{ amount }}</p>
       <div class="btn-group">
-        <el-button type="primary" @click="$router.push('/buyer/order/list')">查看订单</el-button>
+        <el-button class="btn-order buyer-btn-dark" @click="$router.push('/buyer/order/list')">查看订单</el-button>
         <el-button @click="$router.push('/buyer/home')">继续购物</el-button>
       </div>
     </div>
@@ -51,5 +51,18 @@ const success = ref(!!orderId.value)
   display: flex;
   gap: 16px;
   justify-content: center;
+}
+.btn-order {
+  min-width: 120px;
+}
+.buyer-btn-dark {
+  background-color: #909399;
+  border-color: #909399;
+  color: #fff;
+}
+.buyer-btn-dark:hover {
+  background-color: #82848a;
+  border-color: #82848a;
+  color: #fff;
 }
 </style>

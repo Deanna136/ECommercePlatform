@@ -10,6 +10,7 @@
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
     "axios": "^1.16.1",
+    "china-area-data": "^5.0.1",
     "core-js": "^3.8.3",
     "element-plus": "^2.14.0",
     "vue": "^3.2.13",

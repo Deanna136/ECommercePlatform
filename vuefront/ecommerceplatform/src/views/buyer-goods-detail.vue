@@ -1,11 +1,9 @@
 <template>
   <div class="buyer-container">
     <div class="breadcrumb">
-      <el-breadcrumb separator=">">
-        <el-breadcrumb-item @click="goHome">首页</el-breadcrumb-item>
-        <el-breadcrumb-item @click="goCategory">{{ currentCategoryName }}</el-breadcrumb-item>
-        <el-breadcrumb-item>{{ product.name }}</el-breadcrumb-item>
-      </el-breadcrumb>
+      <span class="breadcrumb-link" @click="$router.push('/buyer/home')">首页</span>
+      <span class="breadcrumb-separator">></span>
+      <span class="breadcrumb-current">{{ product.name }}</span>
     </div>
     
     <div class="detail-wrapper">
@@ -143,21 +141,25 @@ onMounted(() => {
 
 <style scoped>
 .breadcrumb {
-  padding: 16px 0;
-  border-bottom: 1px solid #e8e8e8;
-  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: var(--buyer-spacing-lg);
+  font-size: 14px;
 }
-.breadcrumb :deep(.el-breadcrumb__item) {
+.breadcrumb-link {
+  color: #606266;
   cursor: pointer;
 }
-.breadcrumb :deep(.el-breadcrumb__item:last-child) {
-  cursor: default;
+.breadcrumb-link:hover {
+  color: var(--buyer-color-primary, #409EFF);
+  text-decoration: underline;
 }
-.breadcrumb :deep(.el-breadcrumb__link) {
-  color: #666;
+.breadcrumb-separator {
+  color: #909399;
 }
-.breadcrumb :deep(.el-breadcrumb__link:hover) {
-  color: #333;
+.breadcrumb-current {
+  color: #606266;
 }
 .detail-wrapper {
   display: flex;

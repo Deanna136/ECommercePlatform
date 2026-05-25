@@ -4,42 +4,42 @@
   --buyer-primary: #333333;
   --buyer-primary-light: #555555;
   --buyer-primary-dark: #222222;
-  
+
   /* 强调色 - 红色（价格、合计、选中状态） */
   --buyer-price: #e53935;
   --buyer-price-light: #ff6f60;
-  
+
   /* 背景色 - 浅灰系列 */
   --buyer-bg-page: #f5f5f5;
   --buyer-bg-card: #ffffff;
   --buyer-bg-hover: #fafafa;
   --buyer-bg-input: #fafafa;
-  
+
   /* 文字颜色 - 深灰系列 */
   --buyer-text-primary: #333333;
   --buyer-text-regular: #666666;
   --buyer-text-secondary: #999999;
   --buyer-text-placeholder: #cccccc;
-  
+
   /* 边框 - 浅灰 */
   --buyer-border-color: #e8e8e8;
   --buyer-border-color-hover: #d0d0d0;
   --buyer-border-radius: 8px;
   --buyer-border-radius-sm: 6px;
-  
+
   /* 字体大小 */
   --buyer-font-title: 18px;
   --buyer-font-main: 14px;
   --buyer-font-aux: 12px;
-  
+
   /* 阴影 - 简洁 */
   --buyer-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04);
   --buyer-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.06);
   --buyer-shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.08);
-  
+
   /* 过渡动画 */
   --buyer-transition: all 0.2s ease;
-  
+
   /* 间距 */
   --buyer-spacing-xs: 8px;
   --buyer-spacing-sm: 12px;

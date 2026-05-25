@@ -1,8 +1,16 @@
 <template>
   <div class="buyer-container">
+    <!-- 面包屑导航 -->
+    <div class="breadcrumb">
+      <span class="breadcrumb-link" @click="$router.push('/buyer/home')">首页</span>
+      <span class="breadcrumb-separator">></span>
+      <span class="breadcrumb-link" @click="$router.push('/buyer/order/list')">我的订单</span>
+      <span class="breadcrumb-separator">></span>
+      <span class="breadcrumb-current">订单详情</span>
+    </div>
+
     <div class="detail-card" v-loading="loading">
       <div class="card-header">
-        <h2 class="buyer-title">订单详情</h2>
         <el-tag :type="orderStatusType[order.status]">{{ orderStatusText[order.status] }}</el-tag>
       </div>
 
@@ -11,7 +19,7 @@
         <el-descriptions-item label="订单编号">{{ order.orderNo }}</el-descriptions-item>
         <el-descriptions-item label="下单时间">{{ order.createTime }}</el-descriptions-item>
         <el-descriptions-item label="卖家">{{ order.sellerName }} ({{ order.storeName }})</el-descriptions-item>
-        <el-descriptions-item label="订单总金额">¥{{ order.amount }}</el-descriptions-item>
+        <el-descriptions-item label="订单总金额"><span class="total-amount">¥{{ order.amount }}</span></el-descriptions-item>
       </el-descriptions>
 
       <!-- 收货信息 -->
@@ -41,10 +49,9 @@
 
       <!-- 操作按钮组 -->
       <div class="action-buttons">
-        <el-button v-if="canRefund" type="warning" @click="showRefundDialog = true">申请退单</el-button>
-        <el-button v-if="canUpdateInfo" type="primary" @click="showUpdateDialog = true">修改收货信息</el-button>
-        <el-button v-if="canReportAbnormal" type="danger" @click="showAbnormalDialog = true">异常申报</el-button>
-        <el-button @click="$router.push('/buyer/order/list')">返回订单列表</el-button>
+        <el-button v-if="canRefund" class="btn-dark-gray" @click="showRefundDialog = true">申请退单</el-button>
+        <el-button v-if="canUpdateInfo" class="btn-light-gray" @click="showUpdateDialog = true">修改收货信息</el-button>
+        <el-button v-if="canReportAbnormal" class="btn-dark-gray" @click="showAbnormalDialog = true">异常申报</el-button>
       </div>
     </div>
 
@@ -56,8 +63,10 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showRefundDialog = false">取消</el-button>
-        <el-button type="primary" @click="submitRefund" :loading="submitting">提交</el-button>
+        <div class="dialog-footer">
+          <el-button class="btn-cancel" @click="showRefundDialog = false">取消</el-button>
+          <el-button class="btn-dark-gray" @click="submitRefund" :loading="submitting">提交</el-button>
+        </div>
       </template>
     </el-dialog>
 
@@ -72,8 +81,10 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showUpdateDialog = false">取消</el-button>
-        <el-button type="primary" @click="submitUpdateInfo" :loading="submitting">保存修改</el-button>
+        <div class="dialog-footer">
+          <el-button class="btn-cancel" @click="showUpdateDialog = false">取消</el-button>
+          <el-button class="btn-dark-gray" @click="submitUpdateInfo" :loading="submitting">保存修改</el-button>
+        </div>
       </template>
     </el-dialog>
 
@@ -85,8 +96,10 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showAbnormalDialog = false">取消</el-button>
-        <el-button type="danger" @click="submitAbnormal" :loading="submitting">确认申报</el-button>
+        <div class="dialog-footer">
+          <el-button class="btn-cancel" @click="showAbnormalDialog = false">取消</el-button>
+          <el-button class="btn-dark-gray" @click="submitAbnormal" :loading="submitting">确认申报</el-button>
+        </div>
       </template>
     </el-dialog>
   </div>
@@ -220,6 +233,29 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* 面包屑导航 */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: var(--buyer-spacing-lg);
+  font-size: 14px;
+}
+.breadcrumb-link {
+  color: #606266;
+  cursor: pointer;
+}
+.breadcrumb-link:hover {
+  color: var(--buyer-color-primary, #409EFF);
+  text-decoration: underline;
+}
+.breadcrumb-separator {
+  color: #909399;
+}
+.breadcrumb-current {
+  color: #606266;
+}
+
 .detail-card {
   background: #fff;
   border-radius: 16px;
@@ -228,7 +264,7 @@ onMounted(() => {
 }
 .card-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   margin-bottom: 24px;
 }
@@ -243,6 +279,11 @@ onMounted(() => {
 .goods-table {
   margin-bottom: 24px;
 }
+/* 订单总金额红色 */
+.total-amount {
+  color: #e53935;
+  font-weight: 600;
+}
 .action-buttons {
   display: flex;
   gap: 12px;
@@ -250,5 +291,36 @@ onMounted(() => {
   margin-top: 24px;
   padding-top: 16px;
   border-top: 1px solid #ebeef5;
+}
+/* 浅灰色按钮 */
+.btn-light-gray {
+  background-color: #f4f4f5;
+  border-color: #e4e4e7;
+  color: #909399;
+}
+.btn-light-gray:hover {
+  background-color: #e9e9eb;
+  border-color: #d3d4d6;
+  color: #808396;
+}
+/* 对话框按钮样式 */
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.btn-cancel {
+  min-width: 100px;
+}
+.btn-dark-gray {
+  min-width: 100px;
+  background-color: #606266;
+  border-color: #606266;
+  color: #fff;
+}
+.btn-dark-gray:hover {
+  background-color: #4a4a4d;
+  border-color: #4a4a4d;
+  color: #fff;
 }
 </style>

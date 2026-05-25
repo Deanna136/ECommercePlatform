@@ -1,10 +1,9 @@
 <template>
   <div class="buyer-container">
     <div class="breadcrumb">
-      <el-breadcrumb separator=">">
-        <el-breadcrumb-item @click="$router.push('/buyer/home')">首页</el-breadcrumb-item>
-        <el-breadcrumb-item>我的购物车</el-breadcrumb-item>
-      </el-breadcrumb>
+      <span class="breadcrumb-link" @click="$router.push('/buyer/home')">首页</span>
+      <span class="breadcrumb-separator">></span>
+      <span class="breadcrumb-current">我的购物车</span>
     </div>
 
     <div v-if="loading" class="loading-wrapper">
@@ -163,7 +162,12 @@ const removeItem = async (id) => {
 const batchRemove = async () => {
   if (selectedIds.value.length === 0) return
   try {
-    await ElMessageBox.confirm(`确定移出选中的 ${selectedIds.value.length} 件商品吗？`, '批量删除', { type: 'warning' })
+    await ElMessageBox.confirm(`确定移出选中的 ${selectedIds.value.length} 件商品吗？`, '批量删除', { 
+      type: 'warning',
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      customClass: 'buyer-message-box'
+    })
     for (const id of selectedIds.value) {
       await cartApi.removeCartItem(id)
     }
@@ -201,6 +205,15 @@ const checkout = () => {
     ElMessage.warning(`选中的商品中包含 ${invalidItems.length} 件已下架/缺货商品，请重新选择`)
     return
   }
+  
+  // 检查是否是不同商家的商品
+  const storeNames = selectedItems.value.map(item => item.storeName)
+  const uniqueStores = [...new Set(storeNames)]
+  if (uniqueStores.length > 1) {
+    ElMessage.warning('不同商家的商品无法合并下单，请分别下单')
+    return
+  }
+  
   const selectedInfo = selectedItems.value.map(item => ({
     id: item.id,
     productId: item.productId,
@@ -224,21 +237,25 @@ onMounted(() => {
 
 <style scoped>
 .breadcrumb {
-  padding: 16px 0;
-  border-bottom: 1px solid #e8e8e8;
-  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: var(--buyer-spacing-lg);
+  font-size: 14px;
 }
-.breadcrumb :deep(.el-breadcrumb__item) {
+.breadcrumb-link {
+  color: #606266;
   cursor: pointer;
 }
-.breadcrumb :deep(.el-breadcrumb__item:last-child) {
-  cursor: default;
+.breadcrumb-link:hover {
+  color: var(--buyer-color-primary, #409EFF);
+  text-decoration: underline;
 }
-.breadcrumb :deep(.el-breadcrumb__link) {
-  color: #666;
+.breadcrumb-separator {
+  color: #909399;
 }
-.breadcrumb :deep(.el-breadcrumb__link:hover) {
-  color: #333;
+.breadcrumb-current {
+  color: #606266;
 }
 .loading-wrapper {
   text-align: center;
@@ -307,6 +324,26 @@ onMounted(() => {
 }
 .quantity-input :deep(.el-input-number) {
   width: 100px;
+}
+
+.buyer-message-box :deep(.el-message-box__btns) {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--buyer-spacing-sm);
+}
+.buyer-message-box :deep(.el-message-box__btn) {
+  width: 72px;
+  height: 32px;
+  line-height: 1;
+}
+.buyer-message-box :deep(.el-button--primary) {
+  background-color: #333 !important;
+  border-color: #333 !important;
+  color: #fff !important;
+}
+.buyer-message-box :deep(.el-button--primary:hover) {
+  background-color: #222 !important;
+  border-color: #222 !important;
 }
 
 @media (max-width: 768px) {
