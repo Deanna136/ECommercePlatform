@@ -45,7 +45,14 @@ public class AdminFileController {
     @ApiOperation("获取图片")
     public ResponseEntity<byte[]> download(@RequestParam String fileUrl) {
         try (InputStream inputStream = cosUtils.getFileInputStream(fileUrl)) {
-            byte[] data = inputStream.readAllBytes();
+            // Java 1.8 兼容方式读取输入流
+            java.io.ByteArrayOutputStream result = new java.io.ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = inputStream.read(buffer)) != -1) {
+                result.write(buffer, 0, length);
+            }
+            byte[] data = result.toByteArray();
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .body(data);

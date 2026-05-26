@@ -1,5 +1,6 @@
 package com.example.ecommerceplatform.common.utils;
 
+import com.qcloud.cos.model.CannedAccessControlList;
 import com.example.ecommerceplatform.common.Exception.CosException;
 import com.example.ecommerceplatform.common.Result.ErrorCode;
 import com.example.ecommerceplatform.common.properties.TencentCosProperties;
@@ -52,6 +53,7 @@ public class TencentCosUtil {
                     file.getInputStream(),
                     null
             );
+            request.setCannedAcl(CannedAccessControlList.PublicRead);
             cosClient.putObject(request);
 
             // 直接使用你配置的 baseUrl 拼接
