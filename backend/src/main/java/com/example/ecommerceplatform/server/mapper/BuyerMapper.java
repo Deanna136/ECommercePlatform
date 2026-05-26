@@ -8,12 +8,13 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Options;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
+
 @Mapper
 public interface BuyerMapper {
-
     @Select("select * from buyer")
     List<Buyer> getAll();
 
@@ -47,4 +48,10 @@ public interface BuyerMapper {
     void insert(Buyer buyer);
 
     void update(Buyer buyer);
+
+    @Select("SELECT * FROM buyer WHERE id = #{id}")
+    Buyer findById(Long id);
+
+    @Select("SELECT name FROM buyer WHERE id = #{id}")
+    String findNameById(Long id);
 }

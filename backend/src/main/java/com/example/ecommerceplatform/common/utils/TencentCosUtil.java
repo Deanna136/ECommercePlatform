@@ -1,5 +1,6 @@
 package com.example.ecommerceplatform.common.utils;
 
+import com.qcloud.cos.model.CannedAccessControlList;
 import com.example.ecommerceplatform.common.Exception.CosException;
 import com.example.ecommerceplatform.common.Result.ErrorCode;
 import com.example.ecommerceplatform.common.properties.TencentCosProperties;
@@ -51,7 +52,6 @@ public class TencentCosUtil {
                     key,
                     file.getInputStream(),
                     null);
-            // 设置对象为公开读权限
             request.setCannedAcl(CannedAccessControlList.PublicRead);
             cosClient.putObject(request);
 

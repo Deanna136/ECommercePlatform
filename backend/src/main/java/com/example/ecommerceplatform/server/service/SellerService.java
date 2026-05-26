@@ -11,9 +11,13 @@ import java.util.List;
 
 public interface SellerService {
     List<SellerVO> getAll();
+
     SellerVO getById(Long id);
+
     List<SellerVO> query(SellerQueryDTO dto);
+
     void ban(Long id);
+
     void unban(Long id);
 
     /**

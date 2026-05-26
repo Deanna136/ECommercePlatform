@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -129,9 +130,12 @@ public class SellerServiceImpl implements SellerService {
     private SexEnum toSexEnum(String sex) {
         if (sex == null) return null;
         switch (sex.toLowerCase()) {
-            case "male": return SexEnum.male;
-            case "female": return SexEnum.female;
-            default: return null;
+            case "male":
+                return SexEnum.male;
+            case "female":
+                return SexEnum.female;
+            default:
+                return null;
         }
     }
 
@@ -141,14 +145,22 @@ public class SellerServiceImpl implements SellerService {
     private CategoryEnum toCategoryEnum(String category) {
         if (category == null) return null;
         switch (category.toLowerCase()) {
-            case "clothing": return CategoryEnum.clothing;
-            case "food": return CategoryEnum.food;
-            case "electronics": return CategoryEnum.electronics;
-            case "home_living": return CategoryEnum.home_living;
-            case "mother_baby": return CategoryEnum.mother_baby;
-            case "sports": return CategoryEnum.sports;
-            case "books": return CategoryEnum.books;
-            default: return CategoryEnum.others;
+            case "clothing":
+                return CategoryEnum.clothing;
+            case "food":
+                return CategoryEnum.food;
+            case "electronics":
+                return CategoryEnum.electronics;
+            case "home_living":
+                return CategoryEnum.home_living;
+            case "mother_baby":
+                return CategoryEnum.mother_baby;
+            case "sports":
+                return CategoryEnum.sports;
+            case "books":
+                return CategoryEnum.books;
+            default:
+                return CategoryEnum.others;
         }
     }
 

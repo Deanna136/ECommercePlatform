@@ -40,6 +40,7 @@ public interface SellerMapper {
      * 根据用户名查询卖家
      */
     @Select("SELECT * FROM seller WHERE user_name = #{userName}")
+
     Seller findByUserName(String userName);
 
     /**

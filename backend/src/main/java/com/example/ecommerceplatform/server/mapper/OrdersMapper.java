@@ -8,12 +8,12 @@ import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
 @Mapper
 public interface OrdersMapper {
-
     @Select("select * from orders")
     List<Orders> getAll();
 
@@ -46,4 +46,16 @@ public interface OrdersMapper {
 
     @Update("update orders set status = #{status} where id = #{id}")
     int updateStatus(@Param("id") Long id, @Param("status") String status);
+
+    @Select("SELECT * FROM orders WHERE id = #{id}")
+    Orders findById(Long id);
+
+    @Select("SELECT * FROM orders WHERE seller_id = #{sellerId}")
+    List<Orders> findBySellerId(Long sellerId);
+
+    @Select("SELECT * FROM orders")
+    List<Orders> findAll();
+
+    @Update("UPDATE orders SET amount = #{amount}, update_time = NOW() WHERE id = #{id}")
+    int updateAmount(@Param("id") Long id, @Param("amount") Float amount);
 }

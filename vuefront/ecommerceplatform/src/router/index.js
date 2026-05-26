@@ -1,14 +1,19 @@
+
 import { createRouter, createWebHistory } from 'vue-router'
 import Login from '../views/Login.vue'
 import Admin from '../views/Admin.vue'
 import { buyerRoutes } from './buyer-router'
+import { sellerRoutes } from './sellerRouter'
+import { useSellerUserStore } from '@/stores/sellerUserStore'
 
 const routes = [
   { path: '/admin/login', name: 'Login', component: Login, meta: { requiresAuth: false } },
   { path: '/admin', name: 'Admin', component: Admin, meta: { requiresAuth: true, role: 'admin' } },
-  { path: '/', redirect: '/admin/login' },
+  ...sellerRoutes,
+  { path: '/', redirect: '/buyer/login' },
   ...buyerRoutes
 ]
+
 
 const router = createRouter({
   history: createWebHistory(),
@@ -39,6 +44,10 @@ router.beforeEach((to, from, next) => {
   const buyerToken = localStorage.getItem('buyer_token')
   const isBuyerLoggedIn = !!buyerToken
 
+  const sellerUserStore = useSellerUserStore()
+  // 不需要登录的页面
+  const whiteList = ['/seller/login', '/seller/register']
+
   // 买家端守卫
   if (to.path.startsWith('/buyer')) {
     if (to.meta.requiresAuth !== false && !isBuyerLoggedIn) {
@@ -66,6 +75,21 @@ router.beforeEach((to, from, next) => {
     }
     next()
     return
+  }
+
+  // 访问卖家页面
+  if (to.path.startsWith('/seller')) {
+    // 白名单直接放行
+    if (whiteList.includes(to.path)) {
+      next()
+      return
+    }
+
+    // 没有token
+    if (!sellerUserStore.sellerToken) {
+      next('/seller/login')
+      return
+    }
   }
 
   next()

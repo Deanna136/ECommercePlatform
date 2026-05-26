@@ -1,13 +1,24 @@
 const { defineConfig } = require('@vue/cli-service')
+const path = require('path')
+
 module.exports = defineConfig({
+  transpileDependencies: true,
   devServer: {
-    port: 8081, // 前端端口，别和后端 8080 冲突
+    port: 8081,
+    open: true,
     proxy: {
-      '/api': {
-        target: 'http://localhost:8080', // 后端地址
+      '/seller': {
+        target: 'http://localhost:8080',
         changeOrigin: true,
         pathRewrite: {
           '^/api': ''
+        },
+        // 浏览器访问前端路由（如 /seller/register）是 GET + text/html，不能转发到后端 API
+        bypass(req) {
+          const accept = req.headers.accept || ''
+          if (req.method === 'GET' && accept.includes('text/html')) {
+            return '/index.html'
+          }
         }
       },
       '/buyer': {
@@ -21,6 +32,14 @@ module.exports = defineConfig({
       '/seller': {
         target: 'http://localhost:8080', // 后端地址
         changeOrigin: true
+      }
+    }
+  },
+
+  configureWebpack: {
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, 'src')
       }
     }
   },
