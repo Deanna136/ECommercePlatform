@@ -1,77 +1,73 @@
 <template>
-  <div class="login-page">
-    <div class="login-container">
-      <div class="login-header">
-        <h1 class="logo">综合电商平台</h1>
-        <span class="subtitle">管理员后台登录</span>
-      </div>
-      
-      <div class="login-form">
-        <div class="form-item">
-          <label>用户名</label>
-          <input 
-            type="text" 
-            v-model="loginForm.userName" 
-            placeholder="请输入用户名"
-          />
+  <div class="unified-login-page">
+    <div class="card">
+      <div class="top">
+        <div class="title">综合电商平台</div>
+        <div class="switches">
+          <el-button :plain="route.path !== '/admin/login'" @click="goAdmin">管理员</el-button>
+          <el-button :plain="route.path !== '/seller/login'" @click="go('/seller/login')">卖家</el-button>
+          <el-button :plain="route.path !== '/buyer/login'" @click="go('/buyer/login')">买家</el-button>
         </div>
-        <div class="form-item">
-          <label>密码</label>
-          <input 
-            type="password" 
-            v-model="loginForm.password" 
-            placeholder="请输入密码"
-          />
-        </div>
-        <button class="login-btn" @click="handleLogin" :disabled="loading">
-          <span v-if="loading">登录中...</span>
-          <span v-else>登录</span>
-        </button>
-        <div v-if="errorMsg" class="error-message">{{ errorMsg }}</div>
+        <div class="subtitle">管理员登录</div>
       </div>
-      
-      <div class="login-footer">
-        <span>© 2026 综合电商平台</span>
-      </div>
+
+      <el-form :model="form" ref="formRef" label-width="0" class="login-form">
+        <el-form-item prop="userName" :rules="[{ required: true, message: '请输入用户名', trigger: 'blur' }]">
+          <el-input v-model="form.userName" placeholder="用户名" class="input">
+            <template #prefix><User /></template>
+          </el-input>
+        </el-form-item>
+
+        <el-form-item prop="password" :rules="[{ required: true, message: '请输入密码', trigger: 'blur' }]">
+          <el-input v-model="form.password" type="password" placeholder="密码" class="input">
+            <template #prefix><Lock /></template>
+          </el-input>
+        </el-form-item>
+
+        <el-form-item class="actions">
+          <el-button type="primary" :loading="loading" @click="handleLogin" class="submit">登录</el-button>
+        </el-form-item>
+      </el-form>
     </div>
   </div>
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import axios from '../utils/axios'
+import { ref, reactive } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { User, Lock } from '@element-plus/icons-vue'
+import axios from '@/utils/axios'
 
 const router = useRouter()
-
-const loginForm = reactive({
-  userName: '',
-  password: ''
-})
-
+const route = useRoute()
+const formRef = ref(null)
 const loading = ref(false)
-const errorMsg = ref('')
+
+const form = reactive({ userName: '', password: '' })
+
+const go = (path) => router.push(path)
+
+// 明确使用 force=1 来强制展示登录页（避免路由守卫看到旧 token 后自动重定向）
+const goAdmin = () => {
+  // 清理旧 token（切换到管理员登录时希望进入干净的登录页）
+  localStorage.removeItem('admin')
+  localStorage.removeItem('admin_token')
+  router.push({ path: '/admin/login', query: { force: 1 } })
+}
 
 const handleLogin = async () => {
-  if (!loginForm.userName || !loginForm.password) {
-    errorMsg.value = '请输入用户名和密码'
-    return
-  }
+  if (!formRef.value) return
+  await formRef.value.validate().catch(() => { throw new Error('验证失败') })
 
   loading.value = true
-  errorMsg.value = ''
-
   try {
     const result = await axios.post('/admin/login', {
-      userName: loginForm.userName,
-      password: loginForm.password
+      userName: form.userName,
+      password: form.password
     })
 
-    // axios拦截器已经返回了 res（成功时为后端的业务数据）
-    console.debug('[login] result:', result)
-
     if (result && result.code === 200 && result.data) {
-      // 保存登录信息到localStorage
       const adminData = {
         id: result.data.id,
         userName: result.data.userName,
@@ -79,22 +75,14 @@ const handleLogin = async () => {
         avatar: result.data.avatar || ''
       }
       localStorage.setItem('admin', JSON.stringify(adminData))
-      // 同步设置一个单独的 admin_token，方便路由守卫快速读取
-      if (result.data.token) {
-        localStorage.setItem('admin_token', result.data.token)
-      }
-
-      // 小的安全缓冲：先确保 localStorage 写入完成，再跳转
-      console.debug('[login] stored admin data, redirecting to /admin')
+      if (result.data.token) localStorage.setItem('admin_token', result.data.token)
+      ElMessage.success('管理员登录成功')
       router.push('/admin')
     } else {
-      errorMsg.value = (result && result.msg) || '登录失败'
+      ElMessage.error((result && result.msg) || '登录失败')
     }
-  } catch (error) {
-    console.error('登录失败:', error)
-    // 如果是我们axios抛出的Error，可能没有 error.response
-    errorMsg.value = error.response?.data?.msg || error.message || '登录失败，请稍后重试'
-
+  } catch (err) {
+    ElMessage.error(err.response?.data?.msg || err.message || '登录出错')
   } finally {
     loading.value = false
   }
@@ -102,105 +90,43 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
-.login-page {
+.unified-login-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
+  background: linear-gradient(135deg,#eef2ff 0%, #e0f2ff 100%);
+  padding: 24px;
 }
-
-.login-container {
-  background: white;
-  border-radius: 12px;
-  padding: 40px;
-  width: 400px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+.card {
+  width: 420px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 28px;
+  box-shadow: 0 12px 40px rgba(16,24,40,0.08);
 }
-
-.login-header {
+.top {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 18px;
 }
-
-.logo {
-  font-size: 32px;
-  font-weight: bold;
-  color: #1a237e;
-  margin: 0;
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2d5a;
 }
-
-.subtitle {
-  font-size: 14px;
-  color: #666;
-}
-
-.login-form {
+.switches {
+  margin-top: 12px;
   display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.form-item {
-  display: flex;
-  flex-direction: column;
+  justify-content: center;
   gap: 8px;
 }
-
-.form-item label {
-  font-size: 14px;
-  color: #333;
-  font-weight: 500;
-}
-
-.form-item input {
-  padding: 12px 15px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
-  transition: border-color 0.3s;
-}
-
-.form-item input:focus {
-  outline: none;
-  border-color: #1a237e;
-}
-
-.form-item input::placeholder {
-  color: #999;
-}
-
-.login-btn {
-  background: #1a237e;
-  color: white;
-  border: none;
-  padding: 14px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.login-btn:hover:not(:disabled) {
-  background: #283593;
-}
-
-.login-btn:disabled {
-  background: #9fa8da;
-  cursor: not-allowed;
-}
-
-.error-message {
-  color: #f56c6c;
+.subtitle {
+  margin-top: 10px;
+  color: #6b7280;
   font-size: 13px;
-  text-align: center;
 }
-
-.login-footer {
-  text-align: center;
-  margin-top: 20px;
-  font-size: 12px;
-  color: #999;
-}
+.login-form { margin-top: 6px; }
+.input { height: 44px; border-radius: 8px; }
+.actions { text-align: center; margin-top: 8px; }
+.submit { width: 100%; height: 44px; border-radius: 8px; }
 </style>

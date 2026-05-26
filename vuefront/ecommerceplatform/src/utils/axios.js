@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { useRouter } from 'vue-router'
 
 // 创建axios实例
 const service = axios.create({
@@ -59,8 +58,10 @@ service.interceptors.response.use(
     if (res.code !== 200) {
       // Token失效或未登录
       if (res.code === 401) {
+        // 清理所有管理员相关存储，避免路由守卫误判
         localStorage.removeItem('admin')
-        // 跳转到管理员登录页
+        localStorage.removeItem('admin_token')
+        // 跳转到管理员登录页（全页跳转，devServer proxy 已处理 GET -> index.html）
         window.location.href = '/admin/login'
       }
       return Promise.reject(new Error(res.msg || '请求失败'))
@@ -77,7 +78,9 @@ service.interceptors.response.use(
         console.debug('[axios response error] debug error', e)
       }
       if (error.response.status === 401) {
+        // 清理所有管理员相关存储，避免路由守卫误判
         localStorage.removeItem('admin')
+        localStorage.removeItem('admin_token')
         window.location.href = '/admin/login'
       }
     }

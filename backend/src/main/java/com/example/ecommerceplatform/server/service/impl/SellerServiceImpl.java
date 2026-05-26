@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.example.ecommerceplatform.common.context.BaseContext;
 import com.example.ecommerceplatform.common.enumeration.SexEnum;
 import com.example.ecommerceplatform.common.enumeration.CategoryEnum;
+import com.example.ecommerceplatform.common.enumeration.AcountStatusEnum;
 import com.example.ecommerceplatform.common.utils.JwtUtil;
 import com.example.ecommerceplatform.common.utils.RedisUtil;
 import com.example.ecommerceplatform.pojo.dto.SellerLoginDTO;
@@ -227,10 +228,10 @@ public class SellerServiceImpl implements SellerService {
             throw new BusinessException(ErrorCode.PASSWORD_ERROR);
         }
 
-        if ("locked".equals(seller.getStatus())) {
+        if (AcountStatusEnum.locked.equals(seller.getStatus())) {
             throw new BusinessException(ErrorCode.USER_DISABLED);
         }
-        if ("deleted".equals(seller.getStatus())) {
+        if (AcountStatusEnum.deleted.equals(seller.getStatus())) {
             throw new BusinessException(ErrorCode.USER_NOT_EXIST);
         }
 

@@ -11,7 +11,6 @@ import com.qcloud.cos.auth.COSCredentials;
 import com.qcloud.cos.model.COSObject;
 import com.qcloud.cos.model.GetObjectRequest;
 import com.qcloud.cos.model.PutObjectRequest;
-import com.qcloud.cos.model.CannedAccessControlList;
 import com.qcloud.cos.region.Region;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

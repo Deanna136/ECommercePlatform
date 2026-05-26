@@ -1,35 +1,37 @@
 <template>
-  <div class="login-wrapper">
-    <div class="login-box buyer-card">
-      <h2 class="title">欢迎登录！</h2>
-      <el-form :model="form" :rules="rules" ref="formRef" class="login-form" label-position="right" label-width="64px">
-        <el-form-item label="用户名" prop="userName" class="buyer-form-item">
-          <el-input
-            v-model="form.userName"
-            placeholder="请输入用户名"
-            :prefix-icon="User"
-            class="buyer-input"
-          />
-        </el-form-item>
-        <el-form-item label="密码" prop="password" class="buyer-form-item">
-          <el-input
-            v-model="form.password"
-            placeholder="请输入密码"
-            type="password"
-            :prefix-icon="Lock"
-            show-password
-            class="buyer-input"
-          />
-        </el-form-item>
-      </el-form>
-      <div class="form-actions">
-        <el-button class="buyer-btn-primary btn-submit" @click="handleLogin" :loading="loading">
-          立即登录
-        </el-button>
-        <div class="extra-links">
-          <el-link type="info" @click="goToRegister">还没有账号？立即注册</el-link>
+  <div class="unified-login-page">
+    <div class="card">
+      <div class="top">
+        <div class="title">综合电商平台</div>
+        <div class="switches">
+          <el-button :plain="route.path !== '/admin/login'" @click="goAdmin">管理员</el-button>
+          <el-button :plain="route.path !== '/seller/login'" @click="go('/seller/login')">卖家</el-button>
+          <el-button :plain="route.path !== '/buyer/login'" @click="go('/buyer/login')">买家</el-button>
         </div>
+        <div class="subtitle">买家登录</div>
       </div>
+
+      <el-form :model="form" ref="formRef" label-width="0" class="login-form">
+        <el-form-item prop="userName" :rules="[{ required: true, message: '请输入用户名', trigger: 'blur' }]">
+          <el-input v-model="form.userName" placeholder="用户名" class="input">
+            <template #prefix><User /></template>
+          </el-input>
+        </el-form-item>
+
+        <el-form-item prop="password" :rules="[{ required: true, message: '请输入密码', trigger: 'blur' }]">
+          <el-input v-model="form.password" type="password" placeholder="密码" class="input">
+            <template #prefix><Lock /></template>
+          </el-input>
+        </el-form-item>
+
+        <el-form-item class="actions">
+          <el-button type="primary" :loading="loading" @click="handleLogin" class="submit">登录</el-button>
+        </el-form-item>
+
+        <div class="footer-links">
+          <router-link to="/buyer/register">还没有账号？立即注册</router-link>
+        </div>
+      </el-form>
     </div>
   </div>
 </template>
@@ -46,19 +48,19 @@ const route = useRoute()
 const formRef = ref(null)
 const loading = ref(false)
 
-const form = reactive({
-  userName: '',
-  password: ''
-})
+const form = reactive({ userName: '', password: '' })
 
-const rules = {
-  userName: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+const go = (path) => router.push(path)
+
+const goAdmin = () => {
+  localStorage.removeItem('admin')
+  localStorage.removeItem('admin_token')
+  router.push({ path: '/admin/login', query: { force: 1 } })
 }
 
 const handleLogin = async () => {
   if (!formRef.value) return
-  await formRef.value.validate()
+  await formRef.value.validate().catch(() => { throw new Error('验证失败') })
 
   loading.value = true
   try {
@@ -74,94 +76,53 @@ const handleLogin = async () => {
     ElMessage.success('登录成功')
     const redirect = route.query.redirect || '/buyer/home'
     router.push(redirect)
-  } catch (error) {
-    if (error.message) {
-      ElMessage.error(error.message)
-    }
+  } catch (err) {
+    ElMessage.error(err.message || '登录失败')
   } finally {
     loading.value = false
   }
 }
-
-const goToRegister = () => {
-  router.push('/buyer/register')
-}
 </script>
 
 <style scoped>
-.login-wrapper {
+.unified-login-page {
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  background: var(--buyer-bg-page);
-  padding: var(--buyer-spacing-lg);
+  background: linear-gradient(135deg,#eef2ff 0%, #e0f2ff 100%);
+  padding: 24px;
 }
-.login-box {
-  width: 380px;
-  padding: 32px 40px;
-  border: 1px solid var(--buyer-border-color);
+.card {
+  width: 420px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 28px;
+  box-shadow: 0 12px 40px rgba(16,24,40,0.08);
 }
-.title {
+.top {
   text-align: center;
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--buyer-text-primary);
-  margin: 0 0 28px 0;
-}
-.login-form {
-  font-size: 14px;
-}
-.login-form :deep(.el-form-item) {
   margin-bottom: 18px;
 }
-.login-form :deep(.el-form-item__label) {
-  font-size: 14px;
-  color: var(--buyer-text-regular);
-  line-height: 36px;
-  padding-right: 12px;
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2d5a;
 }
-.login-form :deep(.el-form-item__content) {
-  line-height: 36px;
+.switches {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
 }
-.login-form :deep(.el-input__wrapper) {
-  height: 36px !important;
-  border-radius: 6px !important;
-  border: 1px solid var(--buyer-border-color) !important;
-}
-.login-form :deep(.el-input__inner) {
-  height: 34px !important;
-  line-height: 34px !important;
-}
-.login-form :deep(.el-input__wrapper:hover) {
-  border-color: var(--buyer-border-color-hover) !important;
-}
-.login-form :deep(.el-input__wrapper.is-focus) {
-  border-color: var(--buyer-primary) !important;
-  box-shadow: none !important;
-}
-.form-actions {
-  margin-top: 24px;
-  text-align: center;
-}
-.btn-submit {
-  width: 120px;
-}
-.extra-links {
-  margin-top: 16px;
-}
-.extra-links .el-link {
+.subtitle {
+  margin-top: 10px;
+  color: #6b7280;
   font-size: 13px;
-  color: var(--buyer-text-secondary);
 }
-
-@media (max-width: 480px) {
-  .login-box {
-    width: 100%;
-    padding: 24px 20px;
-  }
-  .btn-submit {
-    width: 100%;
-  }
-}
+.login-form { margin-top: 6px; }
+.input { height: 44px; border-radius: 8px; }
+.actions { text-align: center; margin-top: 8px; }
+.submit { width: 100%; height: 44px; border-radius: 8px; }
+.footer-links { text-align: center; margin-top: 8px; color: #6b7280; }
 </style>

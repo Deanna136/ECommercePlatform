@@ -10,10 +10,6 @@ module.exports = defineConfig({
       '/seller': {
         target: 'http://localhost:8080',
         changeOrigin: true,
-        pathRewrite: {
-          '^/api': ''
-        },
-        // 浏览器访问前端路由（如 /seller/register）是 GET + text/html，不能转发到后端 API
         bypass(req) {
           const accept = req.headers.accept || ''
           if (req.method === 'GET' && accept.includes('text/html')) {
@@ -22,16 +18,24 @@ module.exports = defineConfig({
         }
       },
       '/buyer': {
-        target: 'http://localhost:8080', // 后端地址
-        changeOrigin: true
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        bypass(req) {
+          const accept = req.headers.accept || ''
+          if (req.method === 'GET' && accept.includes('text/html')) {
+            return '/index.html'
+          }
+        }
       },
       '/admin': {
-        target: 'http://localhost:8080', // 后端地址
-        changeOrigin: true
-      },
-      '/seller': {
-        target: 'http://localhost:8080', // 后端地址
-        changeOrigin: true
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        bypass(req) {
+          const accept = req.headers.accept || ''
+          if (req.method === 'GET' && accept.includes('text/html')) {
+            return '/index.html'
+          }
+        }
       }
     }
   },

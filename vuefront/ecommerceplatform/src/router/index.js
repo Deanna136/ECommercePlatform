@@ -1,4 +1,3 @@
-
 import { createRouter, createWebHistory } from 'vue-router'
 import Login from '../views/Login.vue'
 import Admin from '../views/Admin.vue'
@@ -69,7 +68,9 @@ router.beforeEach((to, from, next) => {
       next('/admin/login')
       return
     }
-    if (to.path === '/admin/login' && adminToken) {
+    // 如果访问管理员登录页并且本地有 token，默认重定向到 /admin
+    // 但如果显式传入了 ?force=1（例如从登录页顶部切换按钮），则允许访问登录页以便手动登录/刷新 token
+    if (to.path === '/admin/login' && adminToken && !to.query.force) {
       next('/admin')
       return
     }

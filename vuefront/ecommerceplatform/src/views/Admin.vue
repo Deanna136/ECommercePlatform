@@ -211,10 +211,21 @@ const submitChangePassword = async () => {
   }
 }
 
-const logout = () => {
+// Update logout to clear local storage immediately, call backend logout (best-effort), then force full reload to login page
+const logout = async () => {
   showUserMenu.value = false
+  // 先本地清理，避免路由守卫或前端请求继续认为已登录
   localStorage.removeItem('admin')
-  router.push('/admin/login')
+  localStorage.removeItem('admin_token')
+  try {
+    // 尝试告诉后端失效 Token（后台会根据请求头 admin_token 清理 Redis），这是可选的
+    await axios.get('/admin/logout')
+  } catch (err) {
+    // 无论后端是否成功，都继续跳转到登录页
+    console.warn('后台退出接口调用失败或返回异常，已本地清理', err)
+  }
+  // 强制全页面跳转到管理员登录（确保全局内存状态、拦截器等全部重置）
+  window.location.href = '/admin/login?force=1'
 }
 
 onMounted(() => {
