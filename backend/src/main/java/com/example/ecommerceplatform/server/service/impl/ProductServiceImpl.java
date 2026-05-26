@@ -74,22 +74,16 @@ public class ProductServiceImpl implements ProductService {
         product.setPrice(dto.getPrice());
         product.setImage(dto.getImage());
         product.setDescription(dto.getDescription());
-        if (dto.getStatus() != null) {
-            product.setStatus(
-                    ProductStatusEnum.valueOf(dto.getStatus())
-            );
-        }
+        product.setSellerId(sellerId);
 
-        // 使用前端传入状态
         if (dto.getStatus() != null) {
             product.setStatus(
                     ProductStatusEnum.valueOf(dto.getStatus())
             );
         } else {
-            // 默认待审核
             product.setStatus(ProductStatusEnum.pending_review);
         }
-        product.setSellerId(sellerId);
+
 
         productMapper.insert(product);
     }
@@ -111,17 +105,37 @@ public class ProductServiceImpl implements ProductService {
         if (!product.getSellerId().equals(sellerId)) {
             throw new BusinessException(ErrorCode.NO_PERMISSION);
         }
+        // suspend 和 deleted 不允许修改
+        if (product.getStatus() == ProductStatusEnum.suspend
+                || product.getStatus() == ProductStatusEnum.deleted) {
 
-        product.setName(dto.getName());
-        product.setCategory(toCategoryEnum(dto.getCategory()));
-        product.setSku(dto.getSku());
-        product.setPrice(dto.getPrice());
-        product.setImage(dto.getImage());
-        product.setDescription(dto.getDescription());
+            throw new BusinessException(
+                    ErrorCode.PRODUCT_STATUS_ERROR
+            );
+        }
+        if (dto.getName() != null) {
+            product.setName(dto.getName());
+        }
+        if (dto.getCategory() != null) {
+            product.setCategory(
+                    toCategoryEnum(dto.getCategory())
+            );
+        }
+        if (dto.getSku() != null) {
+            product.setSku(dto.getSku());
+        }
+        if (dto.getPrice() != null) {
+            product.setPrice(dto.getPrice());
+        }
+        if (dto.getImage() != null) {
+            product.setImage(dto.getImage());
+        }
+        if (dto.getDescription() != null) {
+            product.setDescription(dto.getDescription());
+        }
+        product.setSellerId(sellerId);
 
-        // 注意：
-        // 这里必须调用 update
-        // 不能调用 insert
+
         productMapper.update(product);
     }
 
@@ -261,7 +275,7 @@ public class ProductServiceImpl implements ProductService {
         productMapper.updateStatus(
                 id,
                 sellerId,
-                ProductStatusEnum.offsale.name()
+                "offsale"
         );
     }
     /**

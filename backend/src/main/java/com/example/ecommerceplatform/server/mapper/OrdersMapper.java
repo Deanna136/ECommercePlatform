@@ -62,8 +62,6 @@ public interface OrdersMapper {
      * 更新订单信息
      */
     @Update("UPDATE orders SET " +
-            "buyer_phone = #{buyerPhone}, " +
-            "buyer_address = #{buyerAddress}, " +
             "update_time = NOW() " +
             "WHERE id = #{id}")
     void updateInfo(Orders orders);
