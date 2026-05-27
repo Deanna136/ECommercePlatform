@@ -1,11 +1,11 @@
 ECommercePlatform:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    host: www.ylxteach.net
-    port: 3366
-    database: ecommerce_platform
-    username: test
-    password: 123456
+    host:
+    port: 
+    database: 
+    username: 
+    password: 
   redis:
     host: 121.4.24.200
     port: 6379
